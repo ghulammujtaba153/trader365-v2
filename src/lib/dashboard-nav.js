@@ -29,6 +29,13 @@ import { HREF_PERMISSION, hasDashboardPermission } from '@/lib/dashboard-access'
 export const NAV_ITEMS = [
   { type: 'link', href: '/home', label: 'Home', icon: Home, group: 'Overview' },
   {
+    type: 'link',
+    href: '/trade-sense-ai',
+    label: 'Trade Sense AI',
+    icon: Brain,
+    group: 'Overview',
+  },
+  {
     type: 'group',
     id: 'discovery',
     label: 'Discovery',

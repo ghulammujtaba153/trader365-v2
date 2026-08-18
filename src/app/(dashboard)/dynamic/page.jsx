@@ -15,7 +15,7 @@ const TABS = [
     id: 'about',
     label: 'About',
     icon: Info,
-    description: 'App about section title, copy, and images'
+    description: 'Logo, mission, feature carousel, and About Us copy for the app'
   },
   {
     id: 'faq',

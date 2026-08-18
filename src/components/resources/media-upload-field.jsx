@@ -18,6 +18,7 @@ export function MediaUploadField({
   progress = 0,
   error,
   onSelect,
+  objectFit = 'cover',
   className
 }) {
   const handleChange = e => {
@@ -39,6 +40,7 @@ export function MediaUploadField({
       <label
         className={cn(
           'relative flex min-h-36 cursor-pointer flex-col items-center justify-center gap-2 overflow-hidden rounded-xl border border-dashed border-border bg-muted/30 px-3 py-4 text-center transition-colors hover:bg-muted/50',
+          objectFit === 'contain' && 'min-h-44 bg-black/90',
           error && 'border-destructive/60',
           uploading && 'pointer-events-none opacity-70'
         )}
@@ -47,7 +49,14 @@ export function MediaUploadField({
 
         {imagePreview ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={imagePreview} alt='' className='absolute inset-0 size-full object-cover' />
+          <img
+            src={imagePreview}
+            alt=''
+            className={cn(
+              'absolute inset-0 size-full',
+              objectFit === 'contain' ? 'bg-black object-contain p-4' : 'object-cover'
+            )}
+          />
         ) : mediaUrl || fileName ? (
           <div className='space-y-1'>
             <Upload className='mx-auto size-6 text-muted-foreground' />
@@ -63,7 +72,7 @@ export function MediaUploadField({
           </div>
         )}
 
-        {imagePreview ? (
+        {imagePreview && objectFit !== 'contain' ? (
           <div className='absolute inset-0 bg-black/35' />
         ) : null}
 

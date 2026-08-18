@@ -15,7 +15,8 @@ const EXT_MIME = {
   '.jpeg': 'image/jpeg',
   '.png': 'image/png',
   '.gif': 'image/gif',
-  '.webp': 'image/webp'
+  '.webp': 'image/webp',
+  '.svg': 'image/svg+xml'
 }
 
 const resolveContentType = file => {
