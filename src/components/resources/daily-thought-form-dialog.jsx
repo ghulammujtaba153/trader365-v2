@@ -7,6 +7,7 @@ import api from '@/lib/api'
 import { uploadToS3 } from '@/lib/upload'
 import { MediaUploadField } from '@/components/resources/media-upload-field'
 import { Button } from '@/components/ui/button'
+import { ConfirmDialog } from '@/components/common/confirm-dialog'
 import {
   Dialog,
   DialogContent,
@@ -33,6 +34,7 @@ export default function DailyThoughtFormDialog({ open, onOpenChange, thought, on
   const [instructors, setInstructors] = useState([])
   const [errors, setErrors] = useState({})
   const [saving, setSaving] = useState(false)
+  const [confirmOpen, setConfirmOpen] = useState(false)
   const [uploading, setUploading] = useState({ image: false, audio: false })
   const [progress, setProgress] = useState({ image: 0, audio: 0 })
   const isEdit = Boolean(thought)
@@ -126,7 +128,11 @@ export default function DailyThoughtFormDialog({ open, onOpenChange, thought, on
       toast.error('Please fill in all required fields')
       return
     }
+    if (saving || confirmOpen) return
+    setConfirmOpen(true)
+  }
 
+  const confirmAction = async () => {
     setSaving(true)
     try {
       const payload = {
@@ -140,16 +146,17 @@ export default function DailyThoughtFormDialog({ open, onOpenChange, thought, on
 
       if (isEdit) {
         await api.put(`/api/daily-thought/update/${thought._id}`, payload)
-        toast.success('Daily thought updated successfully')
-      } else {
-        await api.post('/api/daily-thought/create', payload)
-        toast.success('Daily thought added successfully')
+        onSaved?.()
+        onOpenChange?.(false)
+        return 'Daily thought updated successfully'
       }
 
+      await api.post('/api/daily-thought/create', payload)
       onSaved?.()
       onOpenChange?.(false)
+      return 'Daily thought added successfully'
     } catch (err) {
-      toast.error(err.response?.data?.message || err.message || 'Failed to save daily thought')
+      throw err
     } finally {
       setSaving(false)
     }
@@ -259,12 +266,22 @@ export default function DailyThoughtFormDialog({ open, onOpenChange, thought, on
           <Button
             type='submit'
             form='daily-thought-form'
-            disabled={saving || uploading.image || uploading.audio}
+            disabled={saving || confirmOpen || uploading.image || uploading.audio}
           >
             {saving ? 'Saving…' : isEdit ? 'Update' : 'Add'}
           </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
+
+    <ConfirmDialog
+      open={confirmOpen}
+      onOpenChange={setConfirmOpen}
+      title={isEdit ? 'Update daily thought?' : 'Add daily thought?'}
+      description={isEdit ? 'This will update the daily thought item.' : 'This will create a new daily thought item.'}
+      confirmText={isEdit ? 'Update' : 'Create'}
+      destructive={false}
+      onConfirm={confirmAction}
+    />
   )
 }

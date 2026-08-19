@@ -12,6 +12,48 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Skeleton } from '@/components/ui/skeleton'
 import { Textarea } from '@/components/ui/textarea'
 
+/*
+  MOBILE STREAM NOTES (POST /api/bot)
+  -----------------------------------
+  Response: Content-Type text/event-stream
+
+  Split on blank lines. Each event looks like:
+    data: {JSON}\n\n
+  Ignore empty data. Stream ends with:
+    data: [DONE]
+
+  JSON.parse the payload. Then branch:
+
+  1) { "token": "..." }
+     Append to the current assistant bubble.
+     New line = a real newline character inside token (after JSON.parse),
+     NOT a separate event. Render with multiline text (Swift: split on \n,
+     Flutter: whiteSpace.preWrap / Text with '\n').
+     Example: "That loss is sitting heavy.\n\nIf listening would help"
+
+  2) { "replace": true, "token": "full text" }
+     REPLACE the whole assistant message with token. Do not append.
+     Sent after stream if we patch bullets / resource titles.
+
+  3) { "suggestions": [ { id, title, description, thumbnail, type, pillar,
+       category, tags, url, duration, isPremium } ] }
+     Resource cards for THIS assistant message. Show under the bubble,
+     not inside the text. Play audio from url. duration is seconds.
+     Event may arrive after tokens. [] or missing = no cards.
+
+  4) { "meta": { crisis, tier, trading_advice, model, retrieved, suggestions } }
+     Debug/routing only. Do not show in chat.
+
+  5) { "error": "..." }
+     Show as a failed assistant message.
+
+  Lists in token text:
+     Lines matching "- item" or "1. item" are bullets.
+     Keep them as a list under the same bubble.
+
+  Do not concatenate suggestions / meta / [DONE] into the message string.
+*/
+
 const approximateDuration = seconds => {
   const value = Number(seconds) || 0
   if (value <= 0) return 'Short listen'
@@ -147,6 +189,7 @@ export default function TradeSenseAiTestPage() {
 
   const canSend = useMemo(() => input.trim().length > 0 && !sending, [input, sending])
 
+  // SSE parser: append token, replace full text, capture suggestion cards.
   const parseAndAccumulate = async response => {
     const reader = response.body?.getReader()
     if (!reader) throw new Error('Missing response body for stream')

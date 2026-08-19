@@ -5,6 +5,7 @@ import { toast } from 'sonner'
 
 import api from '@/lib/api'
 import { Button } from '@/components/ui/button'
+import { ConfirmDialog } from '@/components/common/confirm-dialog'
 import {
   Dialog,
   DialogContent,
@@ -41,6 +42,7 @@ export default function GrantSubscriptionDialog({ open, onOpenChange, onGranted 
   const [duration, setDuration] = useState('monthly')
   const [endTime, setEndTime] = useState('')
   const [saving, setSaving] = useState(false)
+  const [confirmOpen, setConfirmOpen] = useState(false)
 
   useEffect(() => {
     if (!open) return
@@ -83,6 +85,7 @@ export default function GrantSubscriptionDialog({ open, onOpenChange, onGranted 
 
   const handleSubmit = async e => {
     e.preventDefault()
+    if (saving || confirmOpen) return
     if (!userId) {
       toast.error('Select a user')
       return
@@ -91,7 +94,10 @@ export default function GrantSubscriptionDialog({ open, onOpenChange, onGranted 
       toast.error('Choose an end date')
       return
     }
+    setConfirmOpen(true)
+  }
 
+  const confirmAction = async () => {
     setSaving(true)
     try {
       const payload = { userId }
@@ -99,11 +105,11 @@ export default function GrantSubscriptionDialog({ open, onOpenChange, onGranted 
       else payload.duration = duration
 
       await api.post('/api/subscription/grant', payload)
-      toast.success('Premium access granted in RevenueCat')
       onGranted?.()
       onOpenChange?.(false)
+      return 'Premium access granted in RevenueCat'
     } catch (err) {
-      toast.error(err.response?.data?.error || err.message || 'Failed to grant access')
+      throw new Error(err.response?.data?.error || err.response?.data?.message || err.message || 'Failed to grant access')
     } finally {
       setSaving(false)
     }
@@ -192,11 +198,29 @@ export default function GrantSubscriptionDialog({ open, onOpenChange, onGranted 
           <Button variant='outline' onClick={() => onOpenChange?.(false)} disabled={saving}>
             Cancel
           </Button>
-          <Button type='submit' form='grant-subscription-form' disabled={saving || !userId}>
+          <Button
+            type='submit'
+            form='grant-subscription-form'
+            disabled={saving || confirmOpen || !userId}
+          >
             {saving ? 'Granting…' : 'Grant in RevenueCat'}
           </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
+
+    <ConfirmDialog
+      open={confirmOpen}
+      onOpenChange={setConfirmOpen}
+      title='Grant premium access?'
+      description={
+        duration === 'custom'
+          ? `This will grant premium to the selected user until ${new Date(endTime).toLocaleString()}.`
+          : `This will grant premium to the selected user for ${duration}.`
+      }
+      confirmText='Grant'
+      destructive={false}
+      onConfirm={confirmAction}
+    />
   )
 }

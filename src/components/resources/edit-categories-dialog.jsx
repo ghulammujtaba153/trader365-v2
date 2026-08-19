@@ -7,6 +7,7 @@ import { toast } from 'sonner'
 import api from '@/lib/api'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { ConfirmDialog } from '@/components/common/confirm-dialog'
 import {
   Dialog,
   DialogContent,
@@ -19,6 +20,7 @@ import {
 export default function EditCategoriesDialog({ open, onOpenChange, user, onSaved }) {
   const [categories, setCategories] = useState([])
   const [saving, setSaving] = useState(false)
+  const [confirmOpen, setConfirmOpen] = useState(false)
 
   useEffect(() => {
     if (!open) return
@@ -27,17 +29,22 @@ export default function EditCategoriesDialog({ open, onOpenChange, user, onSaved
 
   const handleSave = async () => {
     if (!user?._id) return
+    if (saving || confirmOpen) return
+    setConfirmOpen(true)
+  }
+
+  const confirmAction = async () => {
     setSaving(true)
     try {
       await api.post('/api/auth/category/update', {
         userId: user._id,
         categories
       })
-      toast.success('Categories updated successfully')
       onSaved?.()
       onOpenChange?.(false)
+      return 'Categories updated successfully'
     } catch (err) {
-      toast.error(err.response?.data?.message || err.message || 'Failed to update categories')
+      throw new Error(err.response?.data?.message || err.message || 'Failed to update categories')
     } finally {
       setSaving(false)
     }
@@ -79,11 +86,21 @@ export default function EditCategoriesDialog({ open, onOpenChange, user, onSaved
           <Button variant='outline' onClick={() => onOpenChange?.(false)} disabled={saving}>
             Cancel
           </Button>
-          <Button onClick={handleSave} disabled={saving}>
+          <Button onClick={handleSave} disabled={saving || confirmOpen}>
             {saving ? 'Saving…' : 'Save'}
           </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
+
+    <ConfirmDialog
+      open={confirmOpen}
+      onOpenChange={setConfirmOpen}
+      title='Update categories?'
+      description={`This will update categories assigned to ${user?.name}.`}
+      confirmText='Save'
+      destructive={false}
+      onConfirm={confirmAction}
+    />
   )
 }

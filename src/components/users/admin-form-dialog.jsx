@@ -13,6 +13,7 @@ import {
 } from '@/lib/dashboard-access'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
+import { ConfirmDialog } from '@/components/common/confirm-dialog'
 import {
   Dialog,
   DialogContent,
@@ -44,6 +45,7 @@ export default function AdminFormDialog({ open, onOpenChange, admin, onSaved }) 
   const isEdit = Boolean(admin)
   const [showPassword, setShowPassword] = useState(false)
   const [saving, setSaving] = useState(false)
+  const [confirmOpen, setConfirmOpen] = useState(false)
   const [form, setForm] = useState(emptyForm)
 
   useEffect(() => {
@@ -90,6 +92,7 @@ export default function AdminFormDialog({ open, onOpenChange, admin, onSaved }) 
 
   const handleSubmit = async e => {
     e.preventDefault()
+    if (saving || confirmOpen) return
     if (!isEdit && !form.password) {
       toast.error('Password is required')
       return
@@ -98,7 +101,10 @@ export default function AdminFormDialog({ open, onOpenChange, admin, onSaved }) 
       toast.error('Select at least one dashboard page')
       return
     }
+    setConfirmOpen(true)
+  }
 
+  const confirmAction = async () => {
     setSaving(true)
     try {
       const payload = {
@@ -114,15 +120,17 @@ export default function AdminFormDialog({ open, onOpenChange, admin, onSaved }) 
       if (isEdit) {
         const { role, ...profilePayload } = payload
         await api.put(`/api/auth/users/update/${admin._id}`, profilePayload)
-        toast.success('Admin updated successfully')
-      } else {
-        await api.post('/api/auth/register', payload)
-        toast.success('Admin created successfully')
+        onSaved?.()
+        onOpenChange?.(false)
+        return 'Admin updated successfully'
       }
+
+      await api.post('/api/auth/register', payload)
       onSaved?.()
       onOpenChange?.(false)
+      return 'Admin created successfully'
     } catch (err) {
-      toast.error(err.response?.data?.message || err.message || 'Failed to save admin')
+      throw err
     } finally {
       setSaving(false)
     }
@@ -255,11 +263,25 @@ export default function AdminFormDialog({ open, onOpenChange, admin, onSaved }) 
           <Button variant='outline' onClick={() => onOpenChange?.(false)} disabled={saving}>
             Cancel
           </Button>
-          <Button type='submit' form='admin-form' disabled={saving}>
+          <Button type='submit' form='admin-form' disabled={saving || confirmOpen}>
             {saving ? 'Saving…' : isEdit ? 'Update admin' : 'Add admin'}
           </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
+
+    <ConfirmDialog
+      open={confirmOpen}
+      onOpenChange={setConfirmOpen}
+      title={isEdit ? 'Update admin?' : 'Add admin?'}
+      description={
+        isEdit
+          ? 'This will update the admin user profile and dashboard access.'
+          : 'This will create a new admin user with the provided dashboard access.'
+      }
+      confirmText={isEdit ? 'Update' : 'Create'}
+      destructive={false}
+      onConfirm={confirmAction}
+    />
   )
 }

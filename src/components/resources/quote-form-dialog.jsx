@@ -5,6 +5,7 @@ import { toast } from 'sonner'
 
 import api from '@/lib/api'
 import { Button } from '@/components/ui/button'
+import { ConfirmDialog } from '@/components/common/confirm-dialog'
 import {
   Dialog,
   DialogContent,
@@ -21,6 +22,7 @@ const MAX_LENGTH = 150
 export default function QuoteFormDialog({ open, onOpenChange, quote, onSaved }) {
   const [value, setValue] = useState('')
   const [saving, setSaving] = useState(false)
+  const [confirmOpen, setConfirmOpen] = useState(false)
   const [error, setError] = useState('')
   const isEdit = Boolean(quote)
 
@@ -43,20 +45,27 @@ export default function QuoteFormDialog({ open, onOpenChange, quote, onSaved }) 
       return
     }
 
-    setSaving(true)
+    if (saving || confirmOpen) return
     setError('')
+    setConfirmOpen(true)
+  }
+
+  const confirmAction = async () => {
+    setSaving(true)
     try {
+      const trimmed = value.trim()
       if (isEdit) {
         await api.put(`/api/daily-quote/${quote._id}`, { quote: trimmed })
-        toast.success('Quote updated successfully')
-      } else {
-        await api.post('/api/daily-quote', { quote: trimmed })
-        toast.success('Quote added successfully')
+        onSaved?.()
+        onOpenChange?.(false)
+        return 'Quote updated successfully'
       }
+      await api.post('/api/daily-quote', { quote: value.trim() })
       onSaved?.()
       onOpenChange?.(false)
+      return 'Quote added successfully'
     } catch (err) {
-      toast.error(err.response?.data?.message || err.message || 'Failed to save quote')
+      throw new Error(err.response?.data?.message || err.message || 'Failed to save quote')
     } finally {
       setSaving(false)
     }
@@ -102,11 +111,21 @@ export default function QuoteFormDialog({ open, onOpenChange, quote, onSaved }) 
           <Button variant='outline' onClick={() => onOpenChange?.(false)} disabled={saving}>
             Cancel
           </Button>
-          <Button type='submit' form='quote-form' disabled={saving}>
+          <Button type='submit' form='quote-form' disabled={saving || confirmOpen}>
             {saving ? 'Saving…' : isEdit ? 'Update' : 'Add quote'}
           </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
+
+    <ConfirmDialog
+      open={confirmOpen}
+      onOpenChange={setConfirmOpen}
+      title={isEdit ? 'Update quote?' : 'Add quote?'}
+      description='Confirm this change. This will affect the daily quote shown in the app.'
+      confirmText={isEdit ? 'Update' : 'Add'}
+      destructive={false}
+      onConfirm={confirmAction}
+    />
   )
 }

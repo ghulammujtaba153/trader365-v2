@@ -6,6 +6,7 @@ import { toast } from 'sonner'
 import api from '@/lib/api'
 import RichTextEditor from '@/components/dynamic/rich-text-editor'
 import { Button } from '@/components/ui/button'
+import { ConfirmDialog } from '@/components/common/confirm-dialog'
 import {
   Dialog,
   DialogContent,
@@ -30,6 +31,7 @@ export default function TermsFormDialog({ open, onOpenChange, term, onSaved }) {
   const [content, setContent] = useState('')
   const [errors, setErrors] = useState({})
   const [saving, setSaving] = useState(false)
+  const [confirmOpen, setConfirmOpen] = useState(false)
   const isEdit = Boolean(term?._id)
 
   useEffect(() => {
@@ -50,7 +52,11 @@ export default function TermsFormDialog({ open, onOpenChange, term, onSaved }) {
   const handleSubmit = async e => {
     e.preventDefault()
     if (!validate()) return
+    if (saving || confirmOpen) return
+    setConfirmOpen(true)
+  }
 
+  const confirmAction = async () => {
     setSaving(true)
     try {
       const payload = {
@@ -59,15 +65,16 @@ export default function TermsFormDialog({ open, onOpenChange, term, onSaved }) {
       }
       if (isEdit) {
         await api.put(`/api/terms/${term._id}`, payload)
-        toast.success('Terms updated successfully')
-      } else {
-        await api.post('/api/terms', payload)
-        toast.success('Terms created successfully')
+        onSaved?.()
+        onOpenChange?.(false)
+        return 'Terms updated successfully'
       }
+      await api.post('/api/terms', payload)
       onSaved?.()
       onOpenChange?.(false)
+      return 'Terms created successfully'
     } catch (err) {
-      toast.error(err.response?.data?.message || err.message || 'Failed to save terms')
+      throw err
     } finally {
       setSaving(false)
     }
@@ -125,11 +132,21 @@ export default function TermsFormDialog({ open, onOpenChange, term, onSaved }) {
           <Button variant='outline' onClick={() => onOpenChange?.(false)} disabled={saving}>
             Cancel
           </Button>
-          <Button type='submit' form='terms-form' disabled={saving}>
+          <Button type='submit' form='terms-form' disabled={saving || confirmOpen}>
             {saving ? 'Saving…' : 'Save'}
           </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
+
+    <ConfirmDialog
+      open={confirmOpen}
+      onOpenChange={setConfirmOpen}
+      title={isEdit ? 'Update terms?' : 'Add terms?'}
+      description={isEdit ? 'This will update the terms text shown to users.' : 'This will create new terms content.'}
+      confirmText={isEdit ? 'Update' : 'Add'}
+      destructive={false}
+      onConfirm={confirmAction}
+    />
   )
 }

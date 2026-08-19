@@ -5,6 +5,7 @@ import { toast } from 'sonner'
 
 import api from '@/lib/api'
 import { Button } from '@/components/ui/button'
+import { ConfirmDialog } from '@/components/common/confirm-dialog'
 import {
   Dialog,
   DialogContent,
@@ -20,6 +21,7 @@ import { Textarea } from '@/components/ui/textarea'
 export default function FaqFormDialog({ open, onOpenChange, mode = 'add', faq, onSaved }) {
   const [form, setForm] = useState({ question: '', answer: '' })
   const [saving, setSaving] = useState(false)
+  const [confirmOpen, setConfirmOpen] = useState(false)
   const isView = mode === 'view'
   const isEdit = mode === 'edit'
 
@@ -40,6 +42,7 @@ export default function FaqFormDialog({ open, onOpenChange, mode = 'add', faq, o
   const handleSubmit = async e => {
     e.preventDefault()
     if (isView) return
+    if (saving || confirmOpen) return
 
     const question = form.question.trim()
     const answer = form.answer.trim()
@@ -48,19 +51,24 @@ export default function FaqFormDialog({ open, onOpenChange, mode = 'add', faq, o
       return
     }
 
+    setConfirmOpen(true)
+  }
+
+  const confirmAction = async () => {
     setSaving(true)
     try {
       if (isEdit && faq?._id) {
-        await api.put(`/api/faq/${faq._id}`, { question, answer })
-        toast.success('FAQ updated successfully')
-      } else {
-        await api.post('/api/faq', { question, answer })
-        toast.success('FAQ added successfully')
+        await api.put(`/api/faq/${faq._id}`, { question: form.question.trim(), answer: form.answer.trim() })
+        onSaved?.()
+        onOpenChange?.(false)
+        return 'FAQ updated successfully'
       }
+      await api.post('/api/faq', { question: form.question.trim(), answer: form.answer.trim() })
       onSaved?.()
       onOpenChange?.(false)
+      return 'FAQ added successfully'
     } catch (err) {
-      toast.error(err.response?.data?.message || err.message || 'Failed to save FAQ')
+      throw err
     } finally {
       setSaving(false)
     }
@@ -131,12 +139,21 @@ export default function FaqFormDialog({ open, onOpenChange, mode = 'add', faq, o
             {isView ? 'Close' : 'Cancel'}
           </Button>
           {!isView ? (
-            <Button type='submit' form='faq-form' disabled={saving}>
+            <Button type='submit' form='faq-form' disabled={saving || confirmOpen}>
               {saving ? 'Saving…' : isEdit ? 'Update' : 'Add FAQ'}
             </Button>
           ) : null}
         </DialogFooter>
       </DialogContent>
     </Dialog>
+    <ConfirmDialog
+      open={confirmOpen}
+      onOpenChange={setConfirmOpen}
+      title={isEdit ? 'Update FAQ?' : 'Add FAQ?'}
+      description={isEdit ? 'This will update the help article.' : 'This will create a new help article.'}
+      confirmText={isEdit ? 'Update' : 'Add'}
+      destructive={false}
+      onConfirm={confirmAction}
+    />
   )
 }

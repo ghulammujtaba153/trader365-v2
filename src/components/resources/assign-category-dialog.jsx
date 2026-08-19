@@ -5,6 +5,7 @@ import { toast } from 'sonner'
 
 import api from '@/lib/api'
 import { Button } from '@/components/ui/button'
+import { ConfirmDialog } from '@/components/common/confirm-dialog'
 import {
   Dialog,
   DialogContent,
@@ -20,6 +21,7 @@ export default function AssignCategoryDialog({ open, onOpenChange, user, onSaved
   const [selected, setSelected] = useState('')
   const [loading, setLoading] = useState(false)
   const [saving, setSaving] = useState(false)
+  const [confirmOpen, setConfirmOpen] = useState(false)
 
   useEffect(() => {
     if (!open) return
@@ -41,17 +43,22 @@ export default function AssignCategoryDialog({ open, onOpenChange, user, onSaved
 
   const handleAssign = async () => {
     if (!user?._id || !selected) return
+    if (saving || confirmOpen) return
+    setConfirmOpen(true)
+  }
+
+  const confirmAction = async () => {
     setSaving(true)
     try {
       await api.post('/api/auth/category', {
         userId: user._id,
         tagName: selected
       })
-      toast.success('Category assigned successfully')
       onSaved?.()
       onOpenChange?.(false)
+      return 'Category assigned successfully'
     } catch (err) {
-      toast.error(err.response?.data?.message || err.message || 'Failed to assign category')
+      throw new Error(err.response?.data?.message || err.message || 'Failed to assign category')
     } finally {
       setSaving(false)
     }
@@ -92,11 +99,21 @@ export default function AssignCategoryDialog({ open, onOpenChange, user, onSaved
           <Button variant='outline' onClick={() => onOpenChange?.(false)} disabled={saving}>
             Cancel
           </Button>
-          <Button onClick={handleAssign} disabled={!selected || saving}>
-            {saving ? 'Assigning…' : 'Assign'}
+            <Button onClick={handleAssign} disabled={!selected || saving || confirmOpen}>
+              {saving ? 'Assigning…' : 'Assign'}
           </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
+
+      <ConfirmDialog
+        open={confirmOpen}
+        onOpenChange={setConfirmOpen}
+        title='Assign category?'
+        description={`This will assign "${selected}" to ${user?.name}.`}
+        confirmText='Assign'
+        destructive={false}
+        onConfirm={confirmAction}
+      />
   )
 }

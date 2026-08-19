@@ -7,6 +7,7 @@ import { uploadToS3 } from '@/lib/upload'
 import { MediaUploadField } from '@/components/resources/media-upload-field'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
+import { ConfirmDialog } from '@/components/common/confirm-dialog'
 import {
   Dialog,
   DialogContent,
@@ -36,6 +37,7 @@ export default function TestimonialFormDialog({
 }) {
   const [form, setForm] = useState(emptyForm)
   const [saving, setSaving] = useState(false)
+  const [confirmOpen, setConfirmOpen] = useState(false)
   const [uploading, setUploading] = useState(false)
   const [progress, setProgress] = useState(0)
   const isView = mode === 'view'
@@ -89,6 +91,7 @@ export default function TestimonialFormDialog({
   const handleSubmit = async e => {
     e.preventDefault()
     if (isView) return
+    if (saving || confirmOpen) return
 
     const name = form.name.trim()
     const description = form.description.trim()
@@ -96,21 +99,26 @@ export default function TestimonialFormDialog({
       toast.error('Name and quote are required')
       return
     }
+    setConfirmOpen(true)
+  }
 
-    const payload = {
-      name,
-      designation: form.designation.trim(),
-      image: form.image || '',
-      rating: Number(form.rating) || 5,
-      description
-    }
-
+  const confirmAction = async () => {
     setSaving(true)
     try {
+      const name = form.name.trim()
+      const description = form.description.trim()
+      const payload = {
+        name,
+        designation: form.designation.trim(),
+        image: form.image || '',
+        rating: Number(form.rating) || 5,
+        description
+      }
+
       await onSubmit?.(payload)
       onOpenChange?.(false)
     } catch (err) {
-      toast.error(err.response?.data?.message || err.message || 'Failed to save testimonial')
+      throw new Error(err.response?.data?.message || err.message || 'Failed to save testimonial')
     } finally {
       setSaving(false)
     }
@@ -219,12 +227,22 @@ export default function TestimonialFormDialog({
             {isView ? 'Close' : 'Cancel'}
           </Button>
           {!isView ? (
-            <Button type='submit' form='testimonial-form' disabled={saving || uploading}>
+            <Button type='submit' form='testimonial-form' disabled={saving || confirmOpen || uploading}>
               {saving ? 'Saving…' : isEdit ? 'Update' : 'Add'}
             </Button>
           ) : null}
         </DialogFooter>
       </DialogContent>
     </Dialog>
+
+    <ConfirmDialog
+      open={confirmOpen}
+      onOpenChange={setConfirmOpen}
+      title={isEdit ? 'Update testimonial?' : 'Add testimonial?'}
+      description={isEdit ? 'Confirm this update.' : 'Confirm this new testimonial.'}
+      confirmText={isEdit ? 'Update' : 'Add'}
+      destructive={false}
+      onConfirm={confirmAction}
+    />
   )
 }

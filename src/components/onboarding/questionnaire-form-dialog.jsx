@@ -8,6 +8,7 @@ import api from '@/lib/api'
 import { uploadToS3 } from '@/lib/upload'
 import { MediaUploadField } from '@/components/resources/media-upload-field'
 import { Button } from '@/components/ui/button'
+import { ConfirmDialog } from '@/components/common/confirm-dialog'
 import {
   Dialog,
   DialogContent,
@@ -29,6 +30,7 @@ export default function QuestionnaireFormDialog({ open, onOpenChange, questionna
   const [questions, setQuestions] = useState([emptyQuestion()])
   const [errors, setErrors] = useState({})
   const [saving, setSaving] = useState(false)
+  const [confirmOpen, setConfirmOpen] = useState(false)
   const [uploadingIndex, setUploadingIndex] = useState(null)
   const [progress, setProgress] = useState(0)
   const isEdit = Boolean(questionnaire?._id)
@@ -103,32 +105,38 @@ export default function QuestionnaireFormDialog({ open, onOpenChange, questionna
   const handleSubmit = async e => {
     e.preventDefault()
     if (!validate()) return
+    if (saving || confirmOpen) return
+    setConfirmOpen(true)
+  }
 
-    const payload = {
-      title: title.trim(),
-      subTitle: subTitle.trim(),
-      images: imagesEnabled,
-      questions: questions
-        .filter(q => q.text?.trim())
-        .map(q => ({
-          text: q.text.trim(),
-          image: imagesEnabled ? q.image || '' : ''
-        }))
-    }
-
+  const confirmAction = async () => {
     setSaving(true)
     try {
+      const payload = {
+        title: title.trim(),
+        subTitle: subTitle.trim(),
+        images: imagesEnabled,
+        questions: questions
+          .filter(q => q.text?.trim())
+          .map(q => ({
+            text: q.text.trim(),
+            image: imagesEnabled ? q.image || '' : ''
+          }))
+      }
+
       if (isEdit) {
         await api.put(`/api/onboarding/questionnaire/${questionnaire._id}`, payload)
-        toast.success('Questionnaire updated successfully')
-      } else {
-        await api.post('/api/onboarding/questionnaire', payload)
-        toast.success('Questionnaire created successfully')
+        onSaved?.()
+        onOpenChange?.(false)
+        return 'Questionnaire updated successfully'
       }
+
+      await api.post('/api/onboarding/questionnaire', payload)
       onSaved?.()
       onOpenChange?.(false)
+      return 'Questionnaire created successfully'
     } catch (err) {
-      toast.error(err.response?.data?.message || err.message || 'Failed to save questionnaire')
+      throw new Error(err.response?.data?.message || err.message || 'Failed to save questionnaire')
     } finally {
       setSaving(false)
     }
@@ -253,11 +261,21 @@ export default function QuestionnaireFormDialog({ open, onOpenChange, questionna
           <Button variant='outline' onClick={() => onOpenChange?.(false)} disabled={saving || uploading}>
             Cancel
           </Button>
-          <Button type='submit' form='questionnaire-form' disabled={saving || uploading}>
+          <Button type='submit' form='questionnaire-form' disabled={saving || confirmOpen || uploading}>
             {saving ? 'Saving…' : isEdit ? 'Update' : 'Create'}
           </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
+
+    <ConfirmDialog
+      open={confirmOpen}
+      onOpenChange={setConfirmOpen}
+      title={isEdit ? 'Update questionnaire?' : 'Add questionnaire?'}
+      description={isEdit ? 'This will update the onboarding questionnaire.' : 'This will create a new onboarding questionnaire.'}
+      confirmText={isEdit ? 'Update' : 'Create'}
+      destructive={false}
+      onConfirm={confirmAction}
+    />
   )
 }

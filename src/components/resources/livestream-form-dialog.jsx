@@ -10,6 +10,7 @@ import { MediaUploadField } from '@/components/resources/media-upload-field'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
+import { ConfirmDialog } from '@/components/common/confirm-dialog'
 import {
   Dialog,
   DialogContent,
@@ -78,6 +79,7 @@ export default function LivestreamFormDialog({ open, onOpenChange, livestream, o
   const [tags, setTags] = useState([])
   const [errors, setErrors] = useState({})
   const [saving, setSaving] = useState(false)
+  const [confirmOpen, setConfirmOpen] = useState(false)
   const [uploading, setUploading] = useState(false)
   const [progress, setProgress] = useState(0)
   const [newPlatform, setNewPlatform] = useState({ type: '', url: '' })
@@ -274,7 +276,11 @@ export default function LivestreamFormDialog({ open, onOpenChange, livestream, o
       )
       return
     }
+    if (saving || confirmOpen) return
+    setConfirmOpen(true)
+  }
 
+  const confirmAction = async () => {
     setSaving(true)
     try {
       const payload = {
@@ -291,16 +297,22 @@ export default function LivestreamFormDialog({ open, onOpenChange, livestream, o
 
       if (isEdit) {
         await api.put(`/api/livestream/update/${livestream._id}`, payload)
-        toast.success('Livestream updated successfully')
-      } else {
-        await api.post('/api/livestream/create', payload)
-        toast.success('Livestream added successfully')
+        onSaved?.()
+        onOpenChange?.(false)
+        return 'Livestream updated successfully'
       }
 
+      await api.post('/api/livestream/create', payload)
       onSaved?.()
       onOpenChange?.(false)
+      return 'Livestream added successfully'
     } catch (err) {
-      toast.error(err.response?.data?.error || err.response?.data?.message || err.message || 'Failed to save livestream')
+      throw new Error(
+        err.response?.data?.error ||
+          err.response?.data?.message ||
+          err.message ||
+          'Failed to save livestream'
+      )
     } finally {
       setSaving(false)
     }
@@ -538,11 +550,21 @@ export default function LivestreamFormDialog({ open, onOpenChange, livestream, o
           <Button variant='outline' onClick={() => onOpenChange?.(false)} disabled={saving}>
             Cancel
           </Button>
-          <Button type='submit' form='livestream-form' disabled={saving || uploading}>
+          <Button type='submit' form='livestream-form' disabled={saving || confirmOpen || uploading}>
             {saving ? 'Saving…' : isEdit ? 'Update' : 'Add'}
           </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
+
+    <ConfirmDialog
+      open={confirmOpen}
+      onOpenChange={setConfirmOpen}
+      title={isEdit ? 'Update livestream?' : 'Add livestream?'}
+      description={isEdit ? 'This will update the livestream schedule and details.' : 'This will create a new livestream schedule.'}
+      confirmText={isEdit ? 'Update' : 'Create'}
+      destructive={false}
+      onConfirm={confirmAction}
+    />
   )
 }

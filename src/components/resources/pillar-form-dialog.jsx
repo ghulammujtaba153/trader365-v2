@@ -9,6 +9,7 @@ import { uploadToS3 } from '@/lib/upload'
 import { MediaUploadField } from '@/components/resources/media-upload-field'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { ConfirmDialog } from '@/components/common/confirm-dialog'
 import {
   Dialog,
   DialogContent,
@@ -28,6 +29,7 @@ export default function PillarFormDialog({ open, onOpenChange, pillar, onSaved }
   const [categoryInput, setCategoryInput] = useState('')
   const [errors, setErrors] = useState({})
   const [saving, setSaving] = useState(false)
+  const [confirmOpen, setConfirmOpen] = useState(false)
   const [uploading, setUploading] = useState(false)
   const [progress, setProgress] = useState(0)
   const isEdit = Boolean(pillar?._id)
@@ -84,7 +86,11 @@ export default function PillarFormDialog({ open, onOpenChange, pillar, onSaved }
   const handleSubmit = async e => {
     e.preventDefault()
     if (!validate()) return
+    if (saving || confirmOpen) return
+    setConfirmOpen(true)
+  }
 
+  const confirmAction = async () => {
     setSaving(true)
     try {
       const payload = {
@@ -94,15 +100,16 @@ export default function PillarFormDialog({ open, onOpenChange, pillar, onSaved }
       }
       if (isEdit) {
         await api.put(`/api/pillars/categories/${pillar._id}`, payload)
-        toast.success('Pillar updated successfully')
-      } else {
-        await api.post('/api/pillars/categories', payload)
-        toast.success('Pillar created successfully')
+        onSaved?.()
+        onOpenChange?.(false)
+        return 'Pillar updated successfully'
       }
+      await api.post('/api/pillars/categories', payload)
       onSaved?.()
       onOpenChange?.(false)
+      return 'Pillar created successfully'
     } catch (err) {
-      toast.error(err.response?.data?.message || err.message || 'Failed to save pillar')
+      throw err
     } finally {
       setSaving(false)
     }
@@ -193,11 +200,21 @@ export default function PillarFormDialog({ open, onOpenChange, pillar, onSaved }
           <Button variant='outline' onClick={() => onOpenChange?.(false)} disabled={saving || uploading}>
             Cancel
           </Button>
-          <Button type='submit' form='pillar-form' disabled={saving || uploading}>
+          <Button type='submit' form='pillar-form' disabled={saving || confirmOpen || uploading}>
             {saving ? 'Saving…' : isEdit ? 'Update' : 'Add pillar'}
           </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
+
+    <ConfirmDialog
+      open={confirmOpen}
+      onOpenChange={setConfirmOpen}
+      title={isEdit ? 'Update pillar?' : 'Add pillar?'}
+      description={isEdit ? 'This will update the pillar details.' : 'This will create a new pillar with the selected image and categories.'}
+      confirmText={isEdit ? 'Update' : 'Create'}
+      destructive={false}
+      onConfirm={confirmAction}
+    />
   )
 }

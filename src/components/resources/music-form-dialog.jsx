@@ -8,6 +8,7 @@ import { uploadToS3 } from '@/lib/upload'
 import { MediaUploadField } from '@/components/resources/media-upload-field'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { ConfirmDialog } from '@/components/common/confirm-dialog'
 import {
   Dialog,
   DialogContent,
@@ -42,6 +43,7 @@ export default function MusicFormDialog({ open, onOpenChange, resource, onSaved 
   const [pillars, setPillars] = useState([])
   const [tags, setTags] = useState([])
   const [saving, setSaving] = useState(false)
+  const [confirmOpen, setConfirmOpen] = useState(false)
   const [thumbnailPreview, setThumbnailPreview] = useState('')
   const [thumbnailUploading, setThumbnailUploading] = useState(false)
   const [thumbnailProgress, setThumbnailProgress] = useState(0)
@@ -221,20 +223,26 @@ export default function MusicFormDialog({ open, onOpenChange, resource, onSaved 
       return
     }
 
+    if (saving || confirmOpen) return
+    setConfirmOpen(true)
+  }
+
+  const confirmAction = async () => {
     setSaving(true)
     try {
       const payload = { ...form, type: 'audio' }
       if (isEdit) {
         await api.put(`/api/music/${resource._id}`, payload)
-        toast.success('Music updated successfully')
-      } else {
-        await api.post('/api/music', payload)
-        toast.success('Music created successfully')
+        onSaved?.()
+        onOpenChange?.(false)
+        return 'Music updated successfully'
       }
+      await api.post('/api/music', payload)
       onSaved?.()
       onOpenChange?.(false)
+      return 'Music created successfully'
     } catch (err) {
-      toast.error(err.response?.data?.message || err.message || 'Failed to save music')
+      throw err
     } finally {
       setSaving(false)
     }
@@ -393,11 +401,25 @@ export default function MusicFormDialog({ open, onOpenChange, resource, onSaved 
           >
             Cancel
           </Button>
-          <Button type='submit' form='music-form' disabled={saving || thumbnailUploading || audioUploading}>
+          <Button
+            type='submit'
+            form='music-form'
+            disabled={saving || confirmOpen || thumbnailUploading || audioUploading}
+          >
             {saving ? 'Saving…' : isEdit ? 'Update' : 'Add music'}
           </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
+
+    <ConfirmDialog
+      open={confirmOpen}
+      onOpenChange={setConfirmOpen}
+      title={isEdit ? 'Update music?' : 'Add music?'}
+      description={isEdit ? 'This will update the existing music item.' : 'This will create a new music item.'}
+      confirmText={isEdit ? 'Update' : 'Create'}
+      destructive={false}
+      onConfirm={confirmAction}
+    />
   )
 }

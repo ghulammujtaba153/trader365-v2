@@ -8,6 +8,7 @@ import { useAuth } from '@/contexts/auth-context'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
+import { ConfirmDialog } from '@/components/common/confirm-dialog'
 import {
   Dialog,
   DialogContent,
@@ -47,6 +48,7 @@ export default function UserFormDialog({ open, onOpenChange, user, onSaved }) {
   const { user: currentUser } = useAuth()
   const [form, setForm] = useState(emptyForm)
   const [saving, setSaving] = useState(false)
+  const [confirmOpen, setConfirmOpen] = useState(false)
   const [questionnaires, setQuestionnaires] = useState([])
   const [activeTab, setActiveTab] = useState(0)
   const isEdit = Boolean(user)
@@ -115,6 +117,17 @@ export default function UserFormDialog({ open, onOpenChange, user, onSaved }) {
 
   const handleSubmit = async e => {
     e.preventDefault()
+    if (saving || confirmOpen) return
+
+    if (!isEdit && !form.password) {
+      toast.error('Password is required')
+      return
+    }
+
+    setConfirmOpen(true)
+  }
+
+  const confirmAction = async () => {
     setSaving(true)
     try {
       const payload = {
@@ -138,20 +151,18 @@ export default function UserFormDialog({ open, onOpenChange, user, onSaved }) {
         if (canManageRole && role && role !== user.role) {
           await api.patch(`/api/auth/users/${user._id}/role`, { role })
         }
-        toast.success('User updated successfully')
-      } else {
-        if (!form.password) {
-          toast.error('Password is required')
-          setSaving(false)
-          return
-        }
-        await api.post('/api/auth/register', payload)
-        toast.success('User created successfully')
+        onSaved?.()
+        onOpenChange?.(false)
+        return 'User updated successfully'
       }
+
+      await api.post('/api/auth/register', payload)
       onSaved?.()
       onOpenChange?.(false)
+      return 'User created successfully'
     } catch (err) {
-      toast.error(err.response?.data?.message || err.message || 'Failed to save user')
+      // Let <ConfirmDialog> render the error toast.
+      throw err
     } finally {
       setSaving(false)
     }
@@ -376,11 +387,25 @@ export default function UserFormDialog({ open, onOpenChange, user, onSaved }) {
           <Button variant='outline' onClick={() => onOpenChange?.(false)} disabled={saving}>
             Cancel
           </Button>
-          <Button type='submit' form='user-form' disabled={saving}>
+          <Button type='submit' form='user-form' disabled={saving || confirmOpen}>
             {saving ? 'Saving…' : isEdit ? 'Update' : 'Add user'}
           </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
+
+    <ConfirmDialog
+      open={confirmOpen}
+      onOpenChange={setConfirmOpen}
+      title={isEdit ? 'Update user?' : 'Create user?'}
+      description={
+        isEdit
+          ? 'This will update the selected user profile (and optionally role if you changed it).'
+          : 'This will create a new user account with the provided details.'
+      }
+      confirmText={isEdit ? 'Update' : 'Create'}
+      destructive={false}
+      onConfirm={confirmAction}
+    />
   )
 }

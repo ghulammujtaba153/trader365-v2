@@ -16,6 +16,7 @@ import {
   DialogHeader,
   DialogTitle
 } from '@/components/ui/dialog'
+import { ConfirmDialog } from '@/components/common/confirm-dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -32,6 +33,7 @@ export default function InstructorFormDialog({ open, onOpenChange, instructor, o
   const isEdit = Boolean(instructor)
   const [showPassword, setShowPassword] = useState(false)
   const [saving, setSaving] = useState(false)
+  const [confirmOpen, setConfirmOpen] = useState(false)
   const [form, setForm] = useState(emptyForm)
   const [allCategories, setAllCategories] = useState([])
   const [categoriesLoading, setCategoriesLoading] = useState(false)
@@ -89,6 +91,17 @@ export default function InstructorFormDialog({ open, onOpenChange, instructor, o
 
   const handleSubmit = async e => {
     e.preventDefault()
+    if (saving || confirmOpen) return
+
+    if (!isEdit && !form.password) {
+      toast.error('Password is required')
+      return
+    }
+
+    setConfirmOpen(true)
+  }
+
+  const confirmAction = async () => {
     setSaving(true)
     try {
       const payload = {
@@ -108,11 +121,6 @@ export default function InstructorFormDialog({ open, onOpenChange, instructor, o
           await api.patch(`/api/auth/users/${instructor._id}/role`, { role })
         }
       } else {
-        if (!form.password) {
-          toast.error('Password is required')
-          setSaving(false)
-          return
-        }
         const res = await api.post('/api/auth/register', payload)
         instructorId = res.data?.user?._id
         if (!instructorId) {
@@ -127,11 +135,11 @@ export default function InstructorFormDialog({ open, onOpenChange, instructor, o
         })
       }
 
-      toast.success(isEdit ? 'Instructor updated successfully' : 'Instructor created successfully')
       onSaved?.()
       onOpenChange?.(false)
+      return isEdit ? 'Instructor updated successfully' : 'Instructor created successfully'
     } catch (err) {
-      toast.error(err.response?.data?.message || err.message || 'Failed to save instructor')
+      throw err
     } finally {
       setSaving(false)
     }
@@ -264,11 +272,21 @@ export default function InstructorFormDialog({ open, onOpenChange, instructor, o
           <Button variant='outline' onClick={() => onOpenChange?.(false)} disabled={saving}>
             Cancel
           </Button>
-          <Button type='submit' form='instructor-form' disabled={saving}>
+          <Button type='submit' form='instructor-form' disabled={saving || confirmOpen}>
             {saving ? 'Saving…' : isEdit ? 'Update instructor' : 'Add instructor'}
           </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
+
+    <ConfirmDialog
+      open={confirmOpen}
+      onOpenChange={setConfirmOpen}
+      title={isEdit ? 'Update instructor?' : 'Add instructor?'}
+      description={isEdit ? 'This will update the instructor and their categories.' : 'This will create a new instructor and assign categories.'}
+      confirmText={isEdit ? 'Update' : 'Create'}
+      destructive={false}
+      onConfirm={confirmAction}
+    />
   )
 }
