@@ -137,6 +137,7 @@ export default function AdminFormDialog({ open, onOpenChange, admin, onSaved }) 
   }
 
   return (
+    <>
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className='flex max-h-[90vh] flex-col overflow-hidden sm:max-w-2xl'>
         <DialogHeader className='shrink-0'>
@@ -283,5 +284,6 @@ export default function AdminFormDialog({ open, onOpenChange, admin, onSaved }) 
       destructive={false}
       onConfirm={confirmAction}
     />
+    </>
   )
 }

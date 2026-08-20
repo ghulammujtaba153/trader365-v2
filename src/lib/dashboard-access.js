@@ -1,5 +1,6 @@
 export const DASHBOARD_PERMISSIONS = [
   { id: 'home', label: 'Home', group: 'Overview' },
+  { id: 'analytics', label: 'Firebase Analytics', group: 'Overview' },
   { id: 'resources', label: 'Resources', group: 'Discovery' },
   { id: 'pillars', label: 'Pillars', group: 'Discovery' },
   { id: 'content', label: 'Content Permissions', group: 'Discovery' },
@@ -30,6 +31,7 @@ export const ACCESS_PRESETS = [
     label: 'Content',
     ids: [
       'home',
+      'analytics',
       'resources',
       'pillars',
       'content',
@@ -47,12 +49,12 @@ export const ACCESS_PRESETS = [
   {
     id: 'support',
     label: 'Support',
-    ids: ['home', 'users', 'instructors', 'issues', 'notifications']
+    ids: ['home', 'analytics', 'users', 'instructors', 'issues', 'notifications']
   },
   {
     id: 'trading',
     label: 'Trading',
-    ids: ['home', 'trading', 'accountability']
+    ids: ['home', 'analytics', 'trading', 'accountability']
   }
 ]
 
@@ -76,11 +78,13 @@ const PATH_RULES = [
   { id: 'notifications', test: path => path.startsWith('/notifications') },
   { id: 'issues', test: path => path.startsWith('/issues') },
   { id: 'subscriptions', test: path => path.startsWith('/subscriptions') },
+  { id: 'analytics', test: path => path === '/analytics' || path.startsWith('/analytics/') },
   { id: 'home', test: path => path === '/home' || path.startsWith('/home/') }
 ]
 
 export const HREF_PERMISSION = {
   '/home': 'home',
+  '/analytics': 'analytics',
   '/resources': 'resources',
   '/resources/pillars': 'pillars',
   '/resources/content': 'content',

@@ -116,6 +116,7 @@ export default function GrantSubscriptionDialog({ open, onOpenChange, onGranted 
   }
 
   return (
+    <>
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className='flex max-h-[90vh] flex-col overflow-hidden sm:max-w-lg'>
         <DialogHeader className='shrink-0'>
@@ -222,5 +223,6 @@ export default function GrantSubscriptionDialog({ open, onOpenChange, onGranted 
       destructive={false}
       onConfirm={confirmAction}
     />
+    </>
   )
 }

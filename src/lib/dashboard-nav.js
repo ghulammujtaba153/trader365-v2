@@ -1,5 +1,6 @@
 import {
   AlertCircle,
+  BarChart3,
   Bell,
   Brain,
   ChartCandlestick,
@@ -28,6 +29,13 @@ import { HREF_PERMISSION, hasDashboardPermission } from '@/lib/dashboard-access'
 
 export const NAV_ITEMS = [
   { type: 'link', href: '/home', label: 'Home', icon: Home, group: 'Overview' },
+  {
+    type: 'link',
+    href: '/analytics',
+    label: 'Firebase Analytics',
+    icon: BarChart3,
+    group: 'Overview',
+  },
   {
     type: 'link',
     href: '/trade-sense-ai',

@@ -72,6 +72,7 @@ export default function QuoteFormDialog({ open, onOpenChange, quote, onSaved }) 
   }
 
   return (
+    <>
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className='sm:max-w-lg'>
         <DialogHeader>
@@ -127,5 +128,6 @@ export default function QuoteFormDialog({ open, onOpenChange, quote, onSaved }) 
       destructive={false}
       onConfirm={confirmAction}
     />
+    </>
   )
 }

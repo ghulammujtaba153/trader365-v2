@@ -287,6 +287,11 @@ export default function UserDetailPage({ id }) {
               <div className='rounded-xl border p-3'>
                 <p className='text-xs text-muted-foreground'>Newsletter</p>
                 <p className='mt-1 text-sm font-semibold'>{formatYesNo(user.newsLetterConsent)}</p>
+                {user.newsLetterConsentAt ? (
+                  <p className='mt-1 text-xs text-muted-foreground'>
+                    Since {formatDateTime(user.newsLetterConsentAt)}
+                  </p>
+                ) : null}
               </div>
               <div className='rounded-xl border p-3'>
                 <p className='text-xs text-muted-foreground'>Background music</p>

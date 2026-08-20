@@ -82,6 +82,7 @@ export default function FaqFormDialog({ open, onOpenChange, mode = 'add', faq, o
       : 'Create a new help article for users.'
 
   return (
+    <>
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className='flex max-h-[90vh] flex-col overflow-hidden sm:max-w-lg'>
         <DialogHeader className='shrink-0'>
@@ -146,6 +147,7 @@ export default function FaqFormDialog({ open, onOpenChange, mode = 'add', faq, o
         </DialogFooter>
       </DialogContent>
     </Dialog>
+
     <ConfirmDialog
       open={confirmOpen}
       onOpenChange={setConfirmOpen}
@@ -155,5 +157,6 @@ export default function FaqFormDialog({ open, onOpenChange, mode = 'add', faq, o
       destructive={false}
       onConfirm={confirmAction}
     />
+    </>
   )
 }

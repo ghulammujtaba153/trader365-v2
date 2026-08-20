@@ -251,6 +251,7 @@ export default function MusicFormDialog({ open, onOpenChange, resource, onSaved 
   const audioMeta = form.duration > 0 ? `${Math.round(form.duration / 60)} min` : undefined
 
   return (
+    <>
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className='flex max-h-[90vh] flex-col overflow-hidden sm:max-w-2xl'>
         <DialogHeader className='shrink-0'>
@@ -421,5 +422,6 @@ export default function MusicFormDialog({ open, onOpenChange, resource, onSaved 
       destructive={false}
       onConfirm={confirmAction}
     />
+    </>
   )
 }

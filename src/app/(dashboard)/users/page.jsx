@@ -5,7 +5,9 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import {
   Clock,
   CreditCard,
+  Download,
   Eye,
+  Mail,
   Pencil,
   Plus,
   Search,
@@ -116,6 +118,14 @@ const FILTERS = [
     match: user => Boolean(user.isPremium)
   },
   {
+    id: 'newsletter',
+    title: 'Newsletter',
+    subtitle: 'Consented to emails',
+    icon: Mail,
+    accentClass: 'bg-muted text-foreground',
+    match: user => Boolean(user.newsLetterConsent)
+  },
+  {
     id: 'suspended',
     title: 'Suspended',
     subtitle: 'Blocked accounts',
@@ -124,6 +134,53 @@ const FILTERS = [
     match: user => user.status === 'suspended'
   }
 ]
+
+const csvEscape = value => {
+  const text = value == null ? '' : String(value)
+  if (/[",\n\r]/.test(text)) return `"${text.replace(/"/g, '""')}"`
+  return text
+}
+
+const exportNewsletterCsv = users => {
+  const consenting = users.filter(user => Boolean(user.newsLetterConsent))
+  const headers = [
+    'name',
+    'email',
+    'phone',
+    'newsLetterConsent',
+    'newsLetterConsentAt',
+    'status',
+    'isPremium',
+    'createdAt'
+  ]
+  const rows = consenting.map(user =>
+    [
+      user.name || '',
+      user.email || '',
+      user.phone ?? '',
+      user.newsLetterConsent ? 'true' : 'false',
+      user.newsLetterConsentAt
+        ? new Date(user.newsLetterConsentAt).toISOString()
+        : '',
+      user.status || '',
+      user.isPremium ? 'true' : 'false',
+      user.createdAt ? new Date(user.createdAt).toISOString() : ''
+    ]
+      .map(csvEscape)
+      .join(',')
+  )
+  const csv = [headers.join(','), ...rows].join('\n')
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
+  const url = URL.createObjectURL(blob)
+  const link = document.createElement('a')
+  link.href = url
+  link.download = `newsletter-consenting-users-${new Date().toISOString().slice(0, 10)}.csv`
+  document.body.appendChild(link)
+  link.click()
+  link.remove()
+  URL.revokeObjectURL(url)
+  return consenting.length
+}
 
 function UsersPageContent() {
   const router = useRouter()
@@ -255,6 +312,17 @@ function UsersPageContent() {
               {filtered.length} of {users.length} users
             </p>
             <Button
+              variant='outline'
+              onClick={() => {
+                const count = exportNewsletterCsv(users)
+                if (count === 0) toast.message('No consenting users to export')
+                else toast.success(`Exported ${count} consenting user${count === 1 ? '' : 's'}`)
+              }}
+            >
+              <Download className='size-4' />
+              Export newsletter CSV
+            </Button>
+            <Button
               onClick={() => {
                 setSelectedUser(null)
                 setFormOpen(true)
@@ -289,6 +357,7 @@ function UsersPageContent() {
                         <TableHead>Activity time</TableHead>
                         <TableHead>Last active</TableHead>
                         <TableHead>Plan</TableHead>
+                        <TableHead>Newsletter</TableHead>
                         <TableHead>Status</TableHead>
                         <TableHead className='text-right'>Actions</TableHead>
                       </TableRow>
@@ -318,6 +387,18 @@ function UsersPageContent() {
                             <Badge variant={user.isPremium ? 'default' : 'outline'}>
                               {user.isPremium ? 'Premium' : 'Free'}
                             </Badge>
+                          </TableCell>
+                          <TableCell>
+                            <div>
+                              <Badge variant={user.newsLetterConsent ? 'default' : 'outline'}>
+                                {user.newsLetterConsent ? 'Yes' : 'No'}
+                              </Badge>
+                              {user.newsLetterConsentAt ? (
+                                <p className='mt-1 text-xs text-muted-foreground'>
+                                  {new Date(user.newsLetterConsentAt).toLocaleDateString()}
+                                </p>
+                              ) : null}
+                            </div>
                           </TableCell>
                           <TableCell>
                             <div className='flex items-center gap-2'>

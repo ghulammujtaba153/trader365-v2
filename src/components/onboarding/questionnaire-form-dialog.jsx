@@ -145,6 +145,7 @@ export default function QuestionnaireFormDialog({ open, onOpenChange, questionna
   const uploading = uploadingIndex !== null
 
   return (
+    <>
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className='flex max-h-[90vh] flex-col overflow-hidden sm:max-w-2xl'>
         <DialogHeader className='shrink-0'>
@@ -277,5 +278,6 @@ export default function QuestionnaireFormDialog({ open, onOpenChange, questionna
       destructive={false}
       onConfirm={confirmAction}
     />
+    </>
   )
 }

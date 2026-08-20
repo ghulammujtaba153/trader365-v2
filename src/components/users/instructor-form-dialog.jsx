@@ -146,6 +146,7 @@ export default function InstructorFormDialog({ open, onOpenChange, instructor, o
   }
 
   return (
+    <>
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className='flex max-h-[90vh] flex-col overflow-hidden sm:max-w-xl'>
         <DialogHeader className='shrink-0'>
@@ -288,5 +289,6 @@ export default function InstructorFormDialog({ open, onOpenChange, instructor, o
       destructive={false}
       onConfirm={confirmAction}
     />
+    </>
   )
 }

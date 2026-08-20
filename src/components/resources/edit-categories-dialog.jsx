@@ -53,6 +53,7 @@ export default function EditCategoriesDialog({ open, onOpenChange, user, onSaved
   if (!user) return null
 
   return (
+    <>
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className='flex max-h-[90vh] flex-col overflow-hidden sm:max-w-lg'>
         <DialogHeader className='shrink-0'>
@@ -102,5 +103,6 @@ export default function EditCategoriesDialog({ open, onOpenChange, user, onSaved
       destructive={false}
       onConfirm={confirmAction}
     />
+    </>
   )
 }

@@ -67,6 +67,7 @@ export default function AssignCategoryDialog({ open, onOpenChange, user, onSaved
   if (!user) return null
 
   return (
+    <>
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className='sm:max-w-lg'>
         <DialogHeader>
@@ -115,5 +116,6 @@ export default function AssignCategoryDialog({ open, onOpenChange, user, onSaved
         destructive={false}
         onConfirm={confirmAction}
       />
+    </>
   )
 }

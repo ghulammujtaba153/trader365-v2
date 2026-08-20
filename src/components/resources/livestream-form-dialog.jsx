@@ -319,6 +319,7 @@ export default function LivestreamFormDialog({ open, onOpenChange, livestream, o
   }
 
   return (
+    <>
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className='flex max-h-[90vh] flex-col overflow-hidden sm:max-w-2xl'>
         <DialogHeader className='shrink-0'>
@@ -566,5 +567,6 @@ export default function LivestreamFormDialog({ open, onOpenChange, livestream, o
       destructive={false}
       onConfirm={confirmAction}
     />
+    </>
   )
 }

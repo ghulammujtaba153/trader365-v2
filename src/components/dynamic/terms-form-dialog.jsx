@@ -81,6 +81,7 @@ export default function TermsFormDialog({ open, onOpenChange, term, onSaved }) {
   }
 
   return (
+    <>
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className='flex max-h-[90vh] flex-col overflow-hidden sm:max-w-3xl'>
         <DialogHeader className='shrink-0'>
@@ -148,5 +149,6 @@ export default function TermsFormDialog({ open, onOpenChange, term, onSaved }) {
       destructive={false}
       onConfirm={confirmAction}
     />
+    </>
   )
 }
