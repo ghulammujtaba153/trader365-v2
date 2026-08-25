@@ -38,6 +38,13 @@ export const NAV_ITEMS = [
   },
   {
     type: 'link',
+    href: '/bot-analytics',
+    label: 'Bot Analytics',
+    icon: Sparkles,
+    group: 'Overview',
+  },
+  {
+    type: 'link',
     href: '/trade-sense-ai',
     label: 'Trade Sense AI',
     icon: Brain,

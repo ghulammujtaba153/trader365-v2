@@ -5,15 +5,15 @@ import { Skeleton } from '@/components/ui/skeleton'
 
 export function MetricCardSkeleton() {
   return (
-    <Card>
-      <CardContent className='p-4'>
+    <Card className='border-0 bg-card shadow-none ring-1 ring-border/80'>
+      <CardContent className='p-5'>
         <div className='flex items-start justify-between gap-3'>
-          <div className='flex-1 space-y-2'>
-            <Skeleton className='h-4 w-24' />
-            <Skeleton className='h-8 w-20' />
-            <Skeleton className='h-3 w-32' />
+          <div className='flex-1 space-y-2.5'>
+            <Skeleton className='h-4 w-28' />
+            <Skeleton className='h-8 w-16' />
+            <Skeleton className='h-3 w-36' />
           </div>
-          <Skeleton className='size-10 rounded-xl' />
+          <Skeleton className='size-10 rounded-full' />
         </div>
       </CardContent>
     </Card>

@@ -78,13 +78,14 @@ const PATH_RULES = [
   { id: 'notifications', test: path => path.startsWith('/notifications') },
   { id: 'issues', test: path => path.startsWith('/issues') },
   { id: 'subscriptions', test: path => path.startsWith('/subscriptions') },
-  { id: 'analytics', test: path => path === '/analytics' || path.startsWith('/analytics/') },
+  { id: 'analytics', test: path => path === '/analytics' || path.startsWith('/analytics/') || path === '/bot-analytics' || path.startsWith('/bot-analytics/') },
   { id: 'home', test: path => path === '/home' || path.startsWith('/home/') }
 ]
 
 export const HREF_PERMISSION = {
   '/home': 'home',
   '/analytics': 'analytics',
+  '/bot-analytics': 'analytics',
   '/resources': 'resources',
   '/resources/pillars': 'pillars',
   '/resources/content': 'content',

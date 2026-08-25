@@ -37,35 +37,29 @@ import { Textarea } from '@/components/ui/textarea'
   3) { "suggestions": [ ... ] }
      Audio resource cards under the bubble. Ignore empty [].
 
-  3b) Canonical exercise event:
-      { "exerciseSuggestions": [
-          { id, title, description, durationLabel, durationSeconds,
-            order, type: "exercise", suggestion }
-        ] }
-     Render EXACTLY this array under the bubble (do not re-filter).
-     Ignore empty []. Never dump this JSON into the message text.
+  3b) Canonical exercise event (one card only):
+      { "exerciseSuggestion": {
+          id, title, description, durationLabel, durationSeconds,
+          order, type: "exercise", suggestion
+        } }
+     Render this single object under the bubble (do not re-filter).
+     Ignore null / missing. Never dump this JSON into the message text.
      Known ids: box-breathing-reset | grounding-54321 | let-the-day-go
-     Legacy: { "exerciseSuggestion": { ... } } → treat as a one-item array.
+     Legacy: { "exerciseSuggestions": [ ... ] } → use the first item only.
      Start Exercise → deep link by id, e.g. trader365://therapy/exercise/{id}
 
   4) { "meta": { ... } } — ignore in UI
   5) { "error": "..." } — failed assistant message
 
-  Do not concatenate suggestions / exerciseSuggestions / exerciseSuggestion /
+  Do not concatenate suggestions / exerciseSuggestion / exerciseSuggestions /
   meta / [DONE] into the message string.
 */
 
-const mergeExerciseSuggestions = (existing, incoming) => {
-  const list = Array.isArray(existing) ? [...existing] : existing ? [existing] : []
-  const add = Array.isArray(incoming) ? incoming : incoming ? [incoming] : []
-  const seen = new Set(list.map(item => item?.id).filter(Boolean))
-  for (const item of add) {
-    if (item?.id && !seen.has(item.id)) {
-      seen.add(item.id)
-      list.push(item)
-    }
-  }
-  return list
+const normalizeExerciseSuggestion = incoming => {
+  if (!incoming) return null
+  if (Array.isArray(incoming)) return incoming[0] || null
+  if (typeof incoming === 'object') return incoming
+  return null
 }
 
 const approximateDuration = seconds => {
@@ -213,7 +207,7 @@ export default function TradeSenseAiTestPage() {
 
     let assistantText = ''
     let streamSuggestions = []
-    let streamExercises = []
+    let streamExercise = null
     let done = false
 
     // Placeholder assistant entry is created outside this function.
@@ -243,32 +237,28 @@ export default function TradeSenseAiTestPage() {
                 streamSuggestions = parsed.suggestions
                 continue
               }
-              if (Array.isArray(parsed?.exerciseSuggestions)) {
-                if (parsed.exerciseSuggestions.length === 0) continue
-                streamExercises = mergeExerciseSuggestions(streamExercises, parsed.exerciseSuggestions)
+              if (parsed?.exerciseSuggestion && typeof parsed.exerciseSuggestion === 'object') {
+                streamExercise = normalizeExerciseSuggestion(parsed.exerciseSuggestion)
                 setMessages(prev => {
                   const next = [...prev]
                   const last = next[next.length - 1]
                   if (last?.role === 'assistant') {
-                    last.exerciseSuggestions = mergeExerciseSuggestions(
-                      last.exerciseSuggestions,
-                      parsed.exerciseSuggestions
-                    )
+                    last.exerciseSuggestion = streamExercise
+                    delete last.exerciseSuggestions
                   }
                   return next
                 })
                 continue
               }
-              if (parsed?.exerciseSuggestion && typeof parsed.exerciseSuggestion === 'object') {
-                streamExercises = mergeExerciseSuggestions(streamExercises, parsed.exerciseSuggestion)
+              if (Array.isArray(parsed?.exerciseSuggestions)) {
+                if (parsed.exerciseSuggestions.length === 0) continue
+                streamExercise = normalizeExerciseSuggestion(parsed.exerciseSuggestions)
                 setMessages(prev => {
                   const next = [...prev]
                   const last = next[next.length - 1]
                   if (last?.role === 'assistant') {
-                    last.exerciseSuggestions = mergeExerciseSuggestions(
-                      last.exerciseSuggestions,
-                      parsed.exerciseSuggestion
-                    )
+                    last.exerciseSuggestion = streamExercise
+                    delete last.exerciseSuggestions
                   }
                   return next
                 })
@@ -324,7 +314,7 @@ export default function TradeSenseAiTestPage() {
       }
     }
 
-    return { text: assistantText, suggestions: streamSuggestions, exerciseSuggestions: streamExercises }
+    return { text: assistantText, suggestions: streamSuggestions, exerciseSuggestion: streamExercise }
   }
 
   const sendMessage = async () => {
@@ -366,18 +356,16 @@ export default function TradeSenseAiTestPage() {
         })
       }
 
-      if (streamed.exerciseSuggestions?.length > 0) {
+      if (streamed.exerciseSuggestion) {
         setMessages(prev => {
           const next = [...prev]
           for (let i = next.length - 1; i >= 0; i -= 1) {
             if (next[i]?.role === 'assistant') {
               next[i] = {
                 ...next[i],
-                exerciseSuggestions: mergeExerciseSuggestions(
-                  next[i].exerciseSuggestions,
-                  streamed.exerciseSuggestions
-                )
+                exerciseSuggestion: streamed.exerciseSuggestion
               }
+              delete next[i].exerciseSuggestions
               break
             }
           }
@@ -451,51 +439,55 @@ export default function TradeSenseAiTestPage() {
                       </div>
 
                       {m.role === 'assistant' &&
-                      (Array.isArray(m.exerciseSuggestions) ? m.exerciseSuggestions : m.exerciseSuggestion ? [m.exerciseSuggestion] : [])
-                        .length > 0 ? (
-                        <div className='mt-3 space-y-3'>
-                          {(Array.isArray(m.exerciseSuggestions)
-                            ? m.exerciseSuggestions
-                            : m.exerciseSuggestion
-                              ? [m.exerciseSuggestion]
-                              : []
-                          ).map(exercise => (
-                            <div
-                              key={exercise.id || exercise.title}
-                              className='overflow-hidden rounded-xl border bg-card p-4 shadow-sm'
-                            >
-                              <div className='flex items-start justify-between gap-3'>
-                                <span className='flex size-10 shrink-0 items-center justify-center rounded-full border text-xs font-semibold text-muted-foreground'>
-                                  {String(exercise.order || '01').padStart(2, '0')}
-                                </span>
-                                <span className='rounded-full border px-2.5 py-0.5 text-[11px] text-muted-foreground'>
-                                  {exercise.durationLabel || approximateDuration(exercise.durationSeconds)}
-                                </span>
-                              </div>
-                              <p className='mt-3 text-base font-semibold'>{exercise.title}</p>
-                              <p className='mt-1 text-sm text-muted-foreground'>
-                                {exercise.suggestion || exercise.description}
-                              </p>
-                              {exercise.description &&
-                              exercise.suggestion &&
-                              exercise.description !== exercise.suggestion ? (
-                                <p className='mt-2 text-xs text-muted-foreground'>{exercise.description}</p>
-                              ) : null}
-                              <button
-                                type='button'
-                                className='mt-3 text-sm font-medium text-primary hover:underline'
-                                onClick={() => {
-                                  const id = exercise.id || 'unknown'
-                                  console.info('[exercise] Start Exercise', id, exercise)
-                                  toast.message(`Exercise: ${exercise.title || id}`, {
-                                    description: `id=${id} (mobile: open therapy/exercise/${id})`
-                                  })
-                                }}
+                      normalizeExerciseSuggestion(
+                        m.exerciseSuggestion || m.exerciseSuggestions
+                      ) ? (
+                        <div className='mt-3'>
+                          {(() => {
+                            const exercise = normalizeExerciseSuggestion(
+                              m.exerciseSuggestion || m.exerciseSuggestions
+                            )
+                            return (
+                              <div
+                                key={exercise.id || exercise.title}
+                                className='overflow-hidden rounded-xl border bg-card p-4 shadow-sm'
                               >
-                                Start Exercise →
-                              </button>
-                            </div>
-                          ))}
+                                <div className='flex items-start justify-between gap-3'>
+                                  <span className='flex size-10 shrink-0 items-center justify-center rounded-full border text-xs font-semibold text-muted-foreground'>
+                                    {String(exercise.order || '01').padStart(2, '0')}
+                                  </span>
+                                  <span className='rounded-full border px-2.5 py-0.5 text-[11px] text-muted-foreground'>
+                                    {exercise.durationLabel ||
+                                      approximateDuration(exercise.durationSeconds)}
+                                  </span>
+                                </div>
+                                <p className='mt-3 text-base font-semibold'>{exercise.title}</p>
+                                <p className='mt-1 text-sm text-muted-foreground'>
+                                  {exercise.suggestion || exercise.description}
+                                </p>
+                                {exercise.description &&
+                                exercise.suggestion &&
+                                exercise.description !== exercise.suggestion ? (
+                                  <p className='mt-2 text-xs text-muted-foreground'>
+                                    {exercise.description}
+                                  </p>
+                                ) : null}
+                                <button
+                                  type='button'
+                                  className='mt-3 text-sm font-medium text-primary hover:underline'
+                                  onClick={() => {
+                                    const id = exercise.id || 'unknown'
+                                    console.info('[exercise] Start Exercise', id, exercise)
+                                    toast.message(`Exercise: ${exercise.title || id}`, {
+                                      description: `id=${id} (mobile: open therapy/exercise/${id})`
+                                    })
+                                  }}
+                                >
+                                  Start Exercise →
+                                </button>
+                              </div>
+                            )
+                          })()}
                         </div>
                       ) : null}
 
