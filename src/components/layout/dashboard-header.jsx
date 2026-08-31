@@ -69,7 +69,7 @@ export default function DashboardHeader({ title, description }) {
               }
             >
               <Avatar className='size-6'>
-                <AvatarFallback className='bg-foreground text-[10px] font-semibold text-background'>
+                <AvatarFallback className='bg-primary text-[10px] font-semibold text-primary-foreground'>
                   {initials}
                 </AvatarFallback>
               </Avatar>

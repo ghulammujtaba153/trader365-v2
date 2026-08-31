@@ -14,6 +14,7 @@ import {
 import { toast } from 'sonner'
 
 import api from '@/lib/api'
+import { BRAND } from '@/lib/brand-colors'
 import { formatScreenName } from '@/lib/format'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { ChartCardSkeleton } from '@/components/dashboard/skeletons'
@@ -117,7 +118,7 @@ export default function DailyActivityChart({ dateRange }) {
                 type='monotone'
                 dataKey='minutes'
                 name='Time (minutes)'
-                stroke='#171717'
+                stroke={BRAND.chart}
                 strokeWidth={2}
                 dot={false}
               />
@@ -126,7 +127,7 @@ export default function DailyActivityChart({ dateRange }) {
                 type='monotone'
                 dataKey='sessions'
                 name='Sessions'
-                stroke='#737373'
+                stroke={BRAND.chartPalette[1]}
                 strokeWidth={2}
                 dot={false}
               />

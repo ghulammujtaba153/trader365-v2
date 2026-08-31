@@ -14,6 +14,7 @@ import {
 import { toast } from 'sonner'
 
 import api from '@/lib/api'
+import { BRAND } from '@/lib/brand-colors'
 import { ChartCardSkeleton, MetricCardSkeleton } from '@/components/dashboard/skeletons'
 import MetricCard from '@/components/dashboard/metric-card'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -204,7 +205,7 @@ export default function TradingGraph({ userId }) {
                     type='monotone'
                     dataKey='cumulative'
                     name='Cumulative P&L'
-                    stroke='#171717'
+                    stroke={BRAND.chart}
                     strokeWidth={2.5}
                     dot={{ r: 3 }}
                     activeDot={{ r: 5 }}

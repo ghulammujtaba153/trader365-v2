@@ -14,6 +14,7 @@ import {
 import { toast } from 'sonner'
 
 import api from '@/lib/api'
+import { BRAND } from '@/lib/brand-colors'
 import { formatScreenName } from '@/lib/format'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { ChartCardSkeleton } from '@/components/dashboard/skeletons'
@@ -82,8 +83,8 @@ export default function TopScreensChart({ dateRange }) {
               />
               <Tooltip />
               <Legend />
-              <Bar dataKey='minutes' name='Time (minutes)' fill='#171717' radius={[0, 4, 4, 0]} />
-              <Bar dataKey='sessions' name='Sessions' fill='#a3a3a3' radius={[0, 4, 4, 0]} />
+              <Bar dataKey='minutes' name='Time (minutes)' fill={BRAND.chart} radius={[0, 4, 4, 0]} />
+              <Bar dataKey='sessions' name='Sessions' fill={BRAND.chartPalette[2]} radius={[0, 4, 4, 0]} />
             </BarChart>
           </ResponsiveContainer>
         )}

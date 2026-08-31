@@ -30,6 +30,7 @@ import {
 import { toast } from 'sonner'
 
 import api from '@/lib/api'
+import { BRAND, TAB_ACTIVE_CLASS } from '@/lib/brand-colors'
 import { cn } from '@/lib/utils'
 import DashboardHeader from '@/components/layout/dashboard-header'
 import MetricCard from '@/components/dashboard/metric-card'
@@ -68,7 +69,7 @@ const TABS = [
   { id: 'audience', label: 'Audience', icon: Languages }
 ]
 
-const PIE_COLORS = ['#0f172a', '#334155', '#64748b', '#94a3b8', '#cbd5e1', '#e2e8f0']
+const PIE_COLORS = BRAND.chartPalette
 
 const pct = value => `${((Number(value) || 0) * 100).toFixed(1)}%`
 const round1 = value => Number(Number(value || 0).toFixed(2))
@@ -211,7 +212,7 @@ export default function FirebaseAnalyticsPage() {
                 className={cn(
                   'rounded-lg px-3 py-1.5 text-sm transition-colors',
                   dateRange === option.value
-                    ? 'bg-foreground font-medium text-background'
+                    ? TAB_ACTIVE_CLASS
                     : 'text-muted-foreground hover:text-foreground'
                 )}
               >
@@ -247,7 +248,7 @@ export default function FirebaseAnalyticsPage() {
                 className={cn(
                   'inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm transition-colors',
                   selected
-                    ? 'bg-foreground font-medium text-background'
+                    ? TAB_ACTIVE_CLASS
                     : 'text-muted-foreground hover:text-foreground'
                 )}
               >
@@ -339,11 +340,11 @@ export default function FirebaseAnalyticsPage() {
                         <XAxis dataKey='date' tick={{ fontSize: 11 }} />
                         <YAxis tick={{ fontSize: 11 }} />
                         <Tooltip />
-                        <Line type='monotone' dataKey='activeUsers' stroke='#0f172a' strokeWidth={2} dot={false} name='Active users' />
-                        <Line type='monotone' dataKey='newUsers' stroke='#334155' strokeWidth={2} dot={false} name='New users' />
-                        <Line type='monotone' dataKey='sessions' stroke='#64748b' strokeWidth={2} dot={false} name='Sessions' />
-                        <Line type='monotone' dataKey='eventCount' stroke='#94a3b8' strokeWidth={2} dot={false} name='Events' />
-                        <Line type='monotone' dataKey='screenPageViews' stroke='#cbd5e1' strokeWidth={2} dot={false} name='Screens' />
+                        <Line type='monotone' dataKey='activeUsers' stroke={BRAND.chartPalette[0]} strokeWidth={2} dot={false} name='Active users' />
+                        <Line type='monotone' dataKey='newUsers' stroke={BRAND.chartPalette[1]} strokeWidth={2} dot={false} name='New users' />
+                        <Line type='monotone' dataKey='sessions' stroke={BRAND.chartPalette[2]} strokeWidth={2} dot={false} name='Sessions' />
+                        <Line type='monotone' dataKey='eventCount' stroke={BRAND.chartPalette[3]} strokeWidth={2} dot={false} name='Events' />
+                        <Line type='monotone' dataKey='screenPageViews' stroke={BRAND.chartPalette[4]} strokeWidth={2} dot={false} name='Screens' />
                       </LineChart>
                     </ResponsiveContainer>
                   )}
@@ -427,7 +428,7 @@ export default function FirebaseAnalyticsPage() {
                         <XAxis type='number' />
                         <YAxis type='category' dataKey='eventName' width={130} tick={{ fontSize: 11 }} />
                         <Tooltip />
-                        <Bar dataKey='eventCount' fill='#0f172a' radius={[0, 6, 6, 0]} />
+                        <Bar dataKey='eventCount' fill={BRAND.chart} radius={[0, 6, 6, 0]} />
                       </BarChart>
                     </ResponsiveContainer>
                   )}
@@ -511,8 +512,8 @@ export default function FirebaseAnalyticsPage() {
                         <XAxis dataKey='platform' />
                         <YAxis />
                         <Tooltip />
-                        <Bar dataKey='activeUsers' fill='#0f172a' radius={[6, 6, 0, 0]} name='Users' />
-                        <Bar dataKey='sessions' fill='#94a3b8' radius={[6, 6, 0, 0]} name='Sessions' />
+                        <Bar dataKey='activeUsers' fill={BRAND.chart} radius={[6, 6, 0, 0]} name='Users' />
+                        <Bar dataKey='sessions' fill={BRAND.chartMuted} radius={[6, 6, 0, 0]} name='Sessions' />
                       </BarChart>
                     </ResponsiveContainer>
                   )}

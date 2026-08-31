@@ -5,6 +5,7 @@ import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxi
 import { toast } from 'sonner'
 
 import api from '@/lib/api'
+import { BRAND } from '@/lib/brand-colors'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { ChartCardSkeleton } from '@/components/dashboard/skeletons'
@@ -81,7 +82,7 @@ export default function UserGrowth({ dateRange }) {
               <XAxis dataKey='label' tick={{ fontSize: 11 }} tickLine={false} axisLine={false} />
               <YAxis allowDecimals={false} tick={{ fontSize: 11 }} tickLine={false} axisLine={false} width={28} />
               <Tooltip formatter={value => [`${value} new`, 'Users']} />
-              <Bar dataKey='value' name='New users' fill='#171717' radius={[6, 6, 0, 0]} />
+              <Bar dataKey='value' name='New users' fill={BRAND.chart} radius={[6, 6, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         )}

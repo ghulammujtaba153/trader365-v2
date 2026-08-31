@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { Line, LineChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 
 import api from '@/lib/api'
+import { BRAND } from '@/lib/brand-colors'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 
@@ -68,8 +69,8 @@ export default function UserDailyActivity({ userId }) {
               <XAxis dataKey='date' tick={{ fontSize: 11 }} tickLine={false} axisLine={false} />
               <YAxis tick={{ fontSize: 11 }} tickLine={false} axisLine={false} width={28} />
               <Tooltip />
-              <Line type='monotone' dataKey='minutes' name='Minutes' stroke='#171717' strokeWidth={2} dot={false} />
-              <Line type='monotone' dataKey='sessions' name='Sessions' stroke='#737373' strokeWidth={2} dot={false} />
+              <Line type='monotone' dataKey='minutes' name='Minutes' stroke={BRAND.chart} strokeWidth={2} dot={false} />
+              <Line type='monotone' dataKey='sessions' name='Sessions' stroke={BRAND.chartPalette[1]} strokeWidth={2} dot={false} />
             </LineChart>
           </ResponsiveContainer>
         )}

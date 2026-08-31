@@ -29,7 +29,7 @@ export default function StatusPage({
     <div className='relative flex min-h-screen items-center justify-center bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-muted via-background to-background p-4'>
       <Card className='w-full max-w-md border-border/80 shadow-sm'>
         <CardHeader className='space-y-4 text-center'>
-          <div className='mx-auto grid size-14 place-items-center rounded-2xl bg-foreground text-background'>
+          <div className='mx-auto grid size-14 place-items-center rounded-2xl bg-primary text-primary-foreground'>
             <Icon className='size-6' />
           </div>
           <div className='space-y-2'>

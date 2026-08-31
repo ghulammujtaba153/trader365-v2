@@ -14,6 +14,7 @@ import {
 import { CheckCircle2, Flag, Hourglass, TrendingUp } from 'lucide-react'
 
 import api from '@/lib/api'
+import { BRAND, PROGRESS_BAR_CLASS } from '@/lib/brand-colors'
 import MetricCard from '@/components/dashboard/metric-card'
 import { ChartCardSkeleton, MetricCardSkeleton } from '@/components/dashboard/skeletons'
 import { Badge } from '@/components/ui/badge'
@@ -209,7 +210,7 @@ export default function GoalsGraph({ dateRange }) {
                   </span>
                 </div>
                 <div className='h-2 overflow-hidden rounded-full bg-muted'>
-                  <div className='h-full rounded-full bg-foreground' style={{ width: `${completionRate}%` }} />
+                  <div className={`h-full rounded-full ${PROGRESS_BAR_CLASS}`} style={{ width: `${completionRate}%` }} />
                 </div>
               </div>
               <div className='h-80'>
@@ -220,9 +221,9 @@ export default function GoalsGraph({ dateRange }) {
                     <YAxis allowDecimals={false} tick={{ fontSize: 11 }} tickLine={false} axisLine={false} width={28} />
                     <Tooltip />
                     <Legend />
-                    <Bar dataKey='created' name='Created' fill='#171717' radius={[4, 4, 0, 0]} />
-                    <Bar dataKey='completed' name='Completed' fill='#525252' radius={[4, 4, 0, 0]} />
-                    <Bar dataKey='active' name='Active' fill='#a3a3a3' radius={[4, 4, 0, 0]} />
+                    <Bar dataKey='created' name='Created' fill={BRAND.chart} radius={[4, 4, 0, 0]} />
+                    <Bar dataKey='completed' name='Completed' fill={BRAND.chartPalette[1]} radius={[4, 4, 0, 0]} />
+                    <Bar dataKey='active' name='Active' fill={BRAND.chartPalette[3]} radius={[4, 4, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               </div>

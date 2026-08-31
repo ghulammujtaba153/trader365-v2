@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
 
 import api from '@/lib/api'
+import { PROGRESS_BAR_CLASS } from '@/lib/brand-colors'
 import { formatTime, formatScreenName } from '@/lib/format'
 import { TablePagination, usePagination } from '@/components/common/table-pagination'
 import { Badge } from '@/components/ui/badge'
@@ -114,7 +115,7 @@ export default function ScreenPerformanceTable({ dateRange }) {
                             <div className='flex items-center gap-2'>
                               <div className='h-1.5 flex-1 overflow-hidden rounded-full bg-muted'>
                                 <div
-                                  className='h-full rounded-full bg-foreground'
+                                  className={`h-full rounded-full ${PROGRESS_BAR_CLASS}`}
                                   style={{ width: `${pct}%` }}
                                 />
                               </div>

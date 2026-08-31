@@ -267,6 +267,16 @@ export default function TradeSenseAiTestPage() {
               if (parsed?.meta) {
                 continue
               }
+              if (typeof parsed?.disclaimer === 'string') {
+                assistantText = `${parsed.disclaimer}\n\n`
+                setMessages(prev => {
+                  const next = [...prev]
+                  const last = next[next.length - 1]
+                  if (last?.role === 'assistant') last.content = assistantText
+                  return next
+                })
+                continue
+              }
               if (parsed?.replace && typeof parsed?.token === 'string') {
                 assistantText = parsed.token
                 setMessages(prev => {

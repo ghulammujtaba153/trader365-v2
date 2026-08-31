@@ -5,6 +5,7 @@ import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxi
 import { toast } from 'sonner'
 
 import api from '@/lib/api'
+import { BRAND } from '@/lib/brand-colors'
 import { formatDateTime, formatTime, formatScreenName } from '@/lib/format'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -103,7 +104,7 @@ export default function UserActivitySummary({ userId }) {
                 <XAxis dataKey='screen' tick={{ fontSize: 11 }} tickLine={false} axisLine={false} />
                 <YAxis tick={{ fontSize: 11 }} tickLine={false} axisLine={false} width={28} />
                 <Tooltip />
-                <Bar dataKey='minutes' name='Minutes' fill='#171717' radius={[4, 4, 0, 0]} />
+                <Bar dataKey='minutes' name='Minutes' fill={BRAND.chart} radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           )}

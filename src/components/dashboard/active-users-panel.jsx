@@ -5,6 +5,7 @@ import { Minus, TrendingDown, TrendingUp, UserRound } from 'lucide-react'
 import { toast } from 'sonner'
 
 import api from '@/lib/api'
+import { PROGRESS_BAR_CLASS } from '@/lib/brand-colors'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
@@ -115,7 +116,7 @@ export default function ActiveUsersPanel({ dateRange, eligibleAccounts = 0 }) {
                 <p className='text-xl font-semibold'>{engagementPct}%</p>
               </div>
               <div className='h-2 overflow-hidden rounded-full bg-muted'>
-                <div className='h-full rounded-full bg-foreground' style={{ width: `${Math.min(engagementPct, 100)}%` }} />
+                <div className={`h-full rounded-full ${PROGRESS_BAR_CLASS}`} style={{ width: `${Math.min(engagementPct, 100)}%` }} />
               </div>
               <p className='mt-2 text-xs text-muted-foreground'>
                 {activeUsers.toLocaleString()} of {(Number(eligibleAccounts) || 0).toLocaleString()} eligible

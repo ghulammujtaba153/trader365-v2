@@ -13,6 +13,7 @@ import ScreenPerformanceTable from '@/components/dashboard/screen-performance-ta
 import UsersOverview from '@/components/dashboard/users-overview'
 import GoalsGraph from '@/components/dashboard/goals-graph'
 import { MetricCardsRowSkeleton } from '@/components/dashboard/skeletons'
+import { TAB_ACTIVE_CLASS } from '@/lib/brand-colors'
 import { cn } from '@/lib/utils'
 
 const RANGE_LABELS = {
@@ -113,7 +114,7 @@ export default function HomePage() {
                 className={cn(
                   'rounded-lg px-3 py-1.5 text-sm transition-colors',
                   dateRange === option.value
-                    ? 'bg-foreground font-medium text-background'
+                    ? TAB_ACTIVE_CLASS
                     : 'text-muted-foreground hover:text-foreground'
                 )}
               >

@@ -283,7 +283,7 @@ export default function ComposeNotification({ open, onOpenChange, onSent }) {
                   className={cn(
                     'flex-1 rounded-lg px-2 py-1.5 text-xs font-medium transition-colors',
                     index === step
-                      ? 'bg-foreground text-background'
+                      ? 'bg-primary text-primary-foreground'
                       : index < step
                         ? 'bg-muted text-foreground'
                         : 'bg-muted/50 text-muted-foreground'

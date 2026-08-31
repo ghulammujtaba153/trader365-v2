@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 
 import api from '@/lib/api'
+import { BRAND } from '@/lib/brand-colors'
 import { asArray } from '@/components/users/user-profile-utils'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -139,7 +140,7 @@ export default function UserBotSection({ userId }) {
                   <XAxis dataKey='label' tick={{ fontSize: 11 }} tickLine={false} axisLine={false} />
                   <YAxis allowDecimals={false} tick={{ fontSize: 11 }} tickLine={false} axisLine={false} width={28} />
                   <Tooltip />
-                  <Bar dataKey='count' name='Messages' fill='#171717' radius={[4, 4, 0, 0]} />
+                  <Bar dataKey='count' name='Messages' fill={BRAND.chart} radius={[4, 4, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             )}

@@ -25,6 +25,7 @@ import {
 import { toast } from 'sonner'
 
 import api from '@/lib/api'
+import { BRAND, TAB_ACTIVE_CLASS } from '@/lib/brand-colors'
 import { cn } from '@/lib/utils'
 import { formatDateTime, formatMoney, formatNumber } from '@/lib/format'
 import DashboardHeader from '@/components/layout/dashboard-header'
@@ -162,7 +163,7 @@ export default function BotAnalyticsPage() {
                   className={cn(
                     'shrink-0 rounded-md px-3 py-1.5 text-sm font-medium transition-colors',
                     dateRange === option.value
-                      ? 'bg-background text-foreground shadow-sm'
+                      ? TAB_ACTIVE_CLASS
                       : 'text-muted-foreground hover:text-foreground'
                   )}
                 >
@@ -171,7 +172,12 @@ export default function BotAnalyticsPage() {
               ))}
             </div>
 
-            <Button variant='outline' size='sm' className='shrink-0' asChild>
+            <Button
+              variant='default'
+              size='sm'
+              className='shrink-0 bg-[#70C5E8] text-white hover:bg-[#5BB8E0]'
+              asChild
+            >
               <a href={langfuseUrl} target='_blank' rel='noreferrer'>
                 <ExternalLink className='size-4' />
                 Open Langfuse
@@ -260,7 +266,7 @@ export default function BotAnalyticsPage() {
                           type='monotone'
                           dataKey='chatTurns'
                           name='Chat turns'
-                          stroke='#0f172a'
+                          stroke={BRAND.chart}
                           strokeWidth={2}
                           dot={false}
                         />
@@ -290,7 +296,7 @@ export default function BotAnalyticsPage() {
                         <XAxis dataKey='date' tick={{ fontSize: 12 }} />
                         <YAxis tick={{ fontSize: 12 }} />
                         <Tooltip formatter={value => formatCost(value)} />
-                        <Bar dataKey='totalCost' name='Cost' fill='#059669' radius={[4, 4, 0, 0]} />
+                        <Bar dataKey='totalCost' name='Cost' fill={BRAND.chart} radius={[4, 4, 0, 0]} />
                       </BarChart>
                     </ResponsiveContainer>
                   )}

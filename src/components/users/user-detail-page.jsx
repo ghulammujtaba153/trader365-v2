@@ -169,7 +169,7 @@ export default function UserDetailPage({ id }) {
             <div className='flex flex-col gap-5 md:flex-row md:items-start'>
               <Avatar className='size-24'>
                 <AvatarImage src={user.profilePic || undefined} alt={user.name} />
-                <AvatarFallback className='bg-foreground text-2xl text-background'>{initials}</AvatarFallback>
+                <AvatarFallback className='bg-primary text-2xl text-primary-foreground'>{initials}</AvatarFallback>
               </Avatar>
 
               <div className='min-w-0 flex-1'>

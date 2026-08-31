@@ -42,7 +42,7 @@ const STAT_CARDS = [
     accent: 'text-muted-foreground',
     selectedBorder: 'border-foreground/40',
     selectedBg: 'bg-muted/60',
-    selectedBar: 'bg-foreground/50'
+    selectedBar: 'bg-primary/50'
   },
   {
     value: 'active',

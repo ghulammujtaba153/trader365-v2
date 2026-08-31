@@ -11,6 +11,7 @@ import {
   PanelLeftOpen
 } from 'lucide-react'
 
+import { NAV_ACTIVE_CLASS } from '@/lib/brand-colors'
 import { cn } from '@/lib/utils'
 import { filterNavItems, isNavLinkActive } from '@/lib/dashboard-nav'
 import { useAuth } from '@/contexts/auth-context'
@@ -53,13 +54,13 @@ function NavLinkItem({ item, onNavigate }) {
       className={cn(
         'group flex items-center gap-2 rounded-lg px-2.5 py-2 text-sm transition-colors duration-150',
         active
-          ? 'bg-foreground font-semibold text-background'
-          : 'text-sidebar-foreground/75 hover:bg-black/[0.04] hover:text-foreground'
+          ? NAV_ACTIVE_CLASS
+          : 'text-sidebar-foreground/75 hover:bg-primary/10 hover:text-foreground'
       )}
     >
       <Icon className='size-4 shrink-0' strokeWidth={active ? 2.25 : 2} />
       <span className='flex-1'>{item.label}</span>
-      {active ? <span className='size-1.5 rounded-full bg-background/80' aria-hidden /> : null}
+      {active ? <span className='size-1.5 rounded-full bg-primary-foreground/80' aria-hidden /> : null}
     </Link>
   )
 }
@@ -142,7 +143,7 @@ function SidebarFooter() {
       <div className='rounded-2xl border border-border/80 bg-background/80 p-3 shadow-sm backdrop-blur'>
         <div className='flex items-center gap-3'>
           <Avatar className='size-9 ring-2 ring-border ring-offset-2 ring-offset-background'>
-            <AvatarFallback className='bg-foreground font-semibold text-background'>{initials}</AvatarFallback>
+            <AvatarFallback className='bg-primary font-semibold text-primary-foreground'>{initials}</AvatarFallback>
           </Avatar>
           <div className='min-w-0 flex-1'>
             <p className='truncate text-sm font-semibold'>{user?.name || 'Admin'}</p>
@@ -253,8 +254,8 @@ function CollapsedNav({ onNavigate }) {
               className={cn(
                 'flex size-10 items-center justify-center rounded-lg transition-colors',
                 active
-                  ? 'bg-foreground text-background'
-                  : 'text-sidebar-foreground/75 hover:bg-black/[0.04] hover:text-foreground'
+                  ? NAV_ACTIVE_CLASS
+                  : 'text-sidebar-foreground/75 hover:bg-primary/10 hover:text-foreground'
               )}
             >
               <Icon className='size-4' strokeWidth={active ? 2.25 : 2} />
@@ -289,8 +290,8 @@ function CollapsedNav({ onNavigate }) {
             className={cn(
               'flex size-10 items-center justify-center rounded-lg transition-colors',
               active
-                ? 'bg-foreground text-background'
-                : 'text-sidebar-foreground/75 hover:bg-black/[0.04] hover:text-foreground'
+                ? NAV_ACTIVE_CLASS
+                : 'text-sidebar-foreground/75 hover:bg-primary/10 hover:text-foreground'
             )}
           >
             <Icon className='size-4' strokeWidth={active ? 2.25 : 2} />
