@@ -176,8 +176,8 @@ function TradingPageContent() {
         description='Who is journaling, who went quiet, and who to open for coaching.'
       />
 
-      <main className='flex-1 space-y-4 px-4 py-4 md:px-6 md:pb-6'>
-        <div className='grid gap-3 sm:grid-cols-2 xl:grid-cols-4'>
+      <main className='flex-1 space-y-4 px-3 py-4 sm:px-4 md:px-6 md:pb-6'>
+        <div className='grid grid-cols-2 gap-2.5 sm:gap-3 lg:grid-cols-4'>
           {FILTERS.map(item => {
             const selected = filter === item.id
             const Icon = item.icon
@@ -187,7 +187,7 @@ function TradingPageContent() {
                 type='button'
                 onClick={() => applyFilter(item.id)}
                 className={cn(
-                  'rounded-xl text-left transition-shadow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                  'min-w-0 w-full rounded-xl text-left transition-shadow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
                   selected && 'ring-2 ring-foreground/20'
                 )}
               >

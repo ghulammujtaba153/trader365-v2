@@ -10,6 +10,7 @@ import { TablePagination, usePagination } from '@/components/common/table-pagina
 import InstructorFormDialog from '@/components/users/instructor-form-dialog'
 import InstructorViewDialog from '@/components/users/instructor-view-dialog'
 import DashboardHeader from '@/components/layout/dashboard-header'
+import { resolveDashboardAccess } from '@/lib/dashboard-access'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
@@ -82,7 +83,7 @@ export default function InstructorsPage() {
     <>
       <DashboardHeader
         title='Instructors'
-        description='Manage instructor accounts. These are editor-role users assigned to content and resources.'
+        description='Manage instructor accounts, content categories, and which dashboard pages each instructor can open.'
       />
 
       <main className='flex-1 space-y-4 px-4 py-4 md:px-6 md:pb-6'>
@@ -133,8 +134,8 @@ export default function InstructorsPage() {
                         <TableHead>Name</TableHead>
                         <TableHead>Email</TableHead>
                         <TableHead>Phone</TableHead>
-                        <TableHead>Role</TableHead>
                         <TableHead>Categories</TableHead>
+                        <TableHead>Access</TableHead>
                         <TableHead>Status</TableHead>
                         <TableHead className='text-right'>Actions</TableHead>
                       </TableRow>
@@ -148,9 +149,6 @@ export default function InstructorsPage() {
                             <TableCell className='text-muted-foreground'>{user.email || '—'}</TableCell>
                             <TableCell className='text-muted-foreground'>{user.phone || '—'}</TableCell>
                             <TableCell>
-                              <Badge variant='outline'>Instructor</Badge>
-                            </TableCell>
-                            <TableCell>
                               {categories.length ? (
                                 <div className='flex flex-wrap gap-1'>
                                   {categories.map(cat => (
@@ -162,6 +160,9 @@ export default function InstructorsPage() {
                               ) : (
                                 <span className='text-muted-foreground'>None</span>
                               )}
+                            </TableCell>
+                            <TableCell className='text-muted-foreground'>
+                              {`${resolveDashboardAccess({ ...user, role: 'editor' }).length} pages`}
                             </TableCell>
                             <TableCell>
                               <div className='flex items-center gap-2'>

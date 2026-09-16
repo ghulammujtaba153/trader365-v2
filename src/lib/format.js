@@ -171,26 +171,20 @@ export function formatScreenName(value) {
 }
 
 const TOKEN_OBJECT_RE = /\{\s*"token"\s*:\s*((?:"(?:\\.|[^"\\])*")|null)\s*\}/g
+const SSE_NOISE_RE =
+  /\{"status"\s*:\s*"[^"]*"\s*\}|\{"quickReplies"\s*:\s*\[[^\]]*\]\s*\}|\{"meta"\s*:\s*\{[^}]*\}\s*\}/g
 
-export function decodeBotResponse(raw) {
-  if (raw == null) return ''
-  const text = String(raw)
-  if (!text.trim()) return ''
-
-  let source = text
-  if (source.includes('data:')) {
-    source = source
-      .split(/\r?\n/)
-      .map(line => {
-        const trimmed = line.trim()
-        return trimmed.startsWith('data:') ? trimmed.slice(5).trim() : trimmed
-      })
-      .filter(line => line && line !== '[DONE]')
-      .join('')
+export function normalizeUserMessage(value) {
+  if (value == null) return ''
+  if (typeof value === 'string') return value.trim()
+  if (typeof value === 'object') {
+    if (typeof value.message === 'string') return value.message.trim()
+    if (typeof value.text === 'string') return value.text.trim()
   }
+  return ''
+}
 
-  if (!/"token"\s*:/.test(source)) return text.trim()
-
+function extractTokenStrings(source) {
   const tokens = []
   TOKEN_OBJECT_RE.lastIndex = 0
   let match
@@ -202,6 +196,61 @@ export function decodeBotResponse(raw) {
       // skip malformed token
     }
   }
+  return tokens
+}
 
-  return tokens.length ? tokens.join('') : text.trim()
+function parseSseJsonChunk(chunk) {
+  try {
+    return JSON.parse(chunk)
+  } catch {
+    return null
+  }
+}
+
+export function decodeBotResponse(raw) {
+  if (raw == null) return ''
+  const text = String(raw)
+  if (!text.trim()) return ''
+
+  const chunks = text.includes('data:')
+    ? text
+        .split(/\r?\n/)
+        .map(line => {
+          const trimmed = line.trim()
+          return trimmed.startsWith('data:') ? trimmed.slice(5).trim() : trimmed
+        })
+        .filter(line => line && line !== '[DONE]')
+    : [text]
+
+  let assembled = ''
+  for (const chunk of chunks) {
+    if (!chunk) continue
+    const parsed = parseSseJsonChunk(chunk)
+    if (!parsed || typeof parsed !== 'object') {
+      if (!chunk.trimStart().startsWith('{')) assembled += chunk
+      continue
+    }
+    if (typeof parsed.disclaimer === 'string') {
+      assembled = `${parsed.disclaimer}\n\n`
+      continue
+    }
+    if (parsed.replace && typeof parsed.token === 'string') {
+      assembled = parsed.token
+      continue
+    }
+    if (typeof parsed.token === 'string') {
+      assembled += parsed.token
+    }
+  }
+
+  if (assembled.trim()) return assembled.trim()
+
+  const withoutNoise = text.replace(SSE_NOISE_RE, '')
+  const tokens = extractTokenStrings(withoutNoise)
+  if (tokens.length) return tokens.join('').trim()
+
+  const plain = withoutNoise.replace(TOKEN_OBJECT_RE, '').trim()
+  if (plain && !plain.startsWith('{')) return plain
+
+  return text.replace(SSE_NOISE_RE, '').replace(TOKEN_OBJECT_RE, '').trim()
 }

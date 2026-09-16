@@ -1,17 +1,18 @@
 'use client'
 
-import { useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { SendHorizontal } from 'lucide-react'
 import { toast } from 'sonner'
 
 import DashboardHeader from '@/components/layout/dashboard-header'
 import api from '@/lib/api'
+import { decodeBotResponse, normalizeUserMessage } from '@/lib/format'
 import AudioPlayer from '@/components/media/audio-player'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
-import { Skeleton } from '@/components/ui/skeleton'
 import { Textarea } from '@/components/ui/textarea'
+import { useAuth } from '@/contexts/auth-context'
 
 /*
   MOBILE STREAM NOTES (POST /api/bot)
@@ -49,7 +50,8 @@ import { Textarea } from '@/components/ui/textarea'
      Start Exercise → deep link by id, e.g. trader365://therapy/exercise/{id}
 
   4) { "meta": { ... } } — ignore in UI
-  5) { "error": "..." } — failed assistant message
+  5) { "status": "thinking" } — show typing until first token
+  6) { "error": "..." } — failed assistant message
 
   Do not concatenate suggestions / exerciseSuggestion / exerciseSuggestions /
   meta / [DONE] into the message string.
@@ -188,16 +190,143 @@ const shouldSuggestResources = text => {
   ].some(term => q.includes(term))
 }
 
+const CONVERSATION_STARTERS = [
+  "Something's been weighing on me",
+  "I can't stop replaying a loss",
+  'Anxious before the market opens',
+  'Just checking in'
+]
+
+const mapSessionRecordsToMessages = records => {
+  const sorted = [...(Array.isArray(records) ? records : [])].sort(
+    (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+  )
+
+  const messages = []
+  for (const row of sorted) {
+    const baseId = row?._id || row?.id || Math.random().toString(36).slice(2)
+    if (row?.message) {
+      const userText = normalizeUserMessage(row.message)
+      if (userText) {
+        messages.push({
+          id: `${baseId}-user`,
+          role: 'user',
+          content: userText,
+          createdAt: row.createdAt
+        })
+      }
+    }
+    const reply = decodeBotResponse(row?.response)
+    if (reply) {
+      messages.push({
+        id: `${baseId}-assistant`,
+        role: 'assistant',
+        content: reply,
+        createdAt: row.createdAt,
+        fromDb: true
+      })
+    }
+  }
+  return messages
+}
+
 export default function TradeSenseAiTestPage() {
+  const { user } = useAuth()
   const [input, setInput] = useState('')
+  const [loadingHistory, setLoadingHistory] = useState(true)
   const [sending, setSending] = useState(false)
+  const [isThinking, setIsThinking] = useState(false)
   const [messages, setMessages] = useState([])
   const [selectedSuggestion, setSelectedSuggestion] = useState(null)
   const endRef = useRef(null)
 
   const canSend = useMemo(() => input.trim().length > 0 && !sending, [input, sending])
 
-  // SSE parser: append token, replace full text, capture suggestion cards.
+  useEffect(() => {
+    endRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' })
+  }, [messages, isThinking])
+
+  useEffect(() => {
+    const userId = user?._id
+    if (!userId) {
+      setLoadingHistory(false)
+      return
+    }
+
+    let mounted = true
+    const loadSession = async () => {
+      setLoadingHistory(true)
+      try {
+        const res = await api.get(`/api/bot/${userId}`)
+        if (!mounted) return
+        setMessages(mapSessionRecordsToMessages(res.data))
+      } catch {
+        if (mounted) setMessages([])
+      } finally {
+        if (mounted) setLoadingHistory(false)
+      }
+    }
+
+    loadSession()
+    return () => {
+      mounted = false
+    }
+  }, [user?._id])
+
+  // SSE parser: tokens/disclaimer/replace only — ignore meta, status, quickReplies, cards.
+  const applySseEvent = (parsed, data, assistantText) => {
+    if (!parsed || typeof parsed !== 'object') {
+      return { assistantText, handled: false }
+    }
+
+    if (Array.isArray(parsed.suggestions)) {
+      return { assistantText, handled: true, suggestions: parsed.suggestions }
+    }
+    if (parsed.exerciseSuggestion && typeof parsed.exerciseSuggestion === 'object') {
+      return {
+        assistantText,
+        handled: true,
+        exerciseSuggestion: normalizeExerciseSuggestion(parsed.exerciseSuggestion)
+      }
+    }
+    if (Array.isArray(parsed.exerciseSuggestions)) {
+      if (parsed.exerciseSuggestions.length === 0) {
+        return { assistantText, handled: true }
+      }
+      return {
+        assistantText,
+        handled: true,
+        exerciseSuggestion: normalizeExerciseSuggestion(parsed.exerciseSuggestions)
+      }
+    }
+    if (parsed.meta) return { assistantText, handled: true }
+    if (parsed.status) return { assistantText, handled: true, thinking: true }
+    if (parsed.quickReplies) return { assistantText, handled: true }
+
+    if (typeof parsed.disclaimer === 'string') {
+      return {
+        assistantText: `${parsed.disclaimer}\n\n`,
+        handled: true,
+        thinking: false
+      }
+    }
+    if (parsed.replace && typeof parsed.token === 'string') {
+      return { assistantText: parsed.token, handled: true, thinking: false }
+    }
+    if (typeof parsed.token === 'string') {
+      return {
+        assistantText: assistantText + parsed.token,
+        handled: true,
+        thinking: false
+      }
+    }
+    if (typeof parsed.error === 'string') {
+      throw new Error(parsed.error)
+    }
+
+    return { assistantText, handled: true }
+  }
+
   const parseAndAccumulate = async response => {
     const reader = response.body?.getReader()
     if (!reader) throw new Error('Missing response body for stream')
@@ -233,88 +362,46 @@ export default function TradeSenseAiTestPage() {
             // Node forwards either JSON like {"token":"..."} or plain strings.
             try {
               const parsed = JSON.parse(data)
-              if (Array.isArray(parsed?.suggestions)) {
-                streamSuggestions = parsed.suggestions
+              const result = applySseEvent(parsed, data, assistantText)
+              if (result.thinking) setIsThinking(true)
+              if (result.thinking === false) setIsThinking(false)
+              if (result.suggestions) streamSuggestions = result.suggestions
+              if (result.exerciseSuggestion) streamExercise = result.exerciseSuggestion
+              if (result.handled) {
+                assistantText = result.assistantText
+                if (
+                  result.suggestions ||
+                  result.exerciseSuggestion ||
+                  typeof parsed?.disclaimer === 'string' ||
+                  parsed?.replace ||
+                  typeof parsed?.token === 'string'
+                ) {
+                  setMessages(prev => {
+                    const next = [...prev]
+                    const last = next[next.length - 1]
+                    if (last?.role !== 'assistant') return next
+                    last.content = assistantText
+                    if (result.exerciseSuggestion) {
+                      last.exerciseSuggestion = result.exerciseSuggestion
+                      delete last.exerciseSuggestions
+                    }
+                    return next
+                  })
+                }
                 continue
-              }
-              if (parsed?.exerciseSuggestion && typeof parsed.exerciseSuggestion === 'object') {
-                streamExercise = normalizeExerciseSuggestion(parsed.exerciseSuggestion)
-                setMessages(prev => {
-                  const next = [...prev]
-                  const last = next[next.length - 1]
-                  if (last?.role === 'assistant') {
-                    last.exerciseSuggestion = streamExercise
-                    delete last.exerciseSuggestions
-                  }
-                  return next
-                })
-                continue
-              }
-              if (Array.isArray(parsed?.exerciseSuggestions)) {
-                if (parsed.exerciseSuggestions.length === 0) continue
-                streamExercise = normalizeExerciseSuggestion(parsed.exerciseSuggestions)
-                setMessages(prev => {
-                  const next = [...prev]
-                  const last = next[next.length - 1]
-                  if (last?.role === 'assistant') {
-                    last.exerciseSuggestion = streamExercise
-                    delete last.exerciseSuggestions
-                  }
-                  return next
-                })
-                continue
-              }
-              if (parsed?.meta) {
-                continue
-              }
-              if (typeof parsed?.disclaimer === 'string') {
-                assistantText = `${parsed.disclaimer}\n\n`
-                setMessages(prev => {
-                  const next = [...prev]
-                  const last = next[next.length - 1]
-                  if (last?.role === 'assistant') last.content = assistantText
-                  return next
-                })
-                continue
-              }
-              if (parsed?.replace && typeof parsed?.token === 'string') {
-                assistantText = parsed.token
-                setMessages(prev => {
-                  const next = [...prev]
-                  const last = next[next.length - 1]
-                  if (last?.role === 'assistant') last.content = assistantText
-                  return next
-                })
-                continue
-              }
-              if (typeof parsed?.token === 'string') {
-                assistantText += parsed.token
-                setMessages(prev => {
-                  const next = [...prev]
-                  const last = next[next.length - 1]
-                  if (last?.role === 'assistant') last.content = assistantText
-                  return next
-                })
-              } else if (typeof parsed?.error === 'string') {
-                throw new Error(parsed.error)
-              } else if (typeof parsed?.token !== 'string') {
-                assistantText += data
-                setMessages(prev => {
-                  const next = [...prev]
-                  const last = next[next.length - 1]
-                  if (last?.role === 'assistant') last.content = assistantText
-                  return next
-                })
               }
             } catch (e) {
               if (e instanceof SyntaxError) {
-                assistantText += data
-                setMessages(prev => {
-                  const next = [...prev]
-                  const last = next[next.length - 1]
-                  if (last?.role === 'assistant') last.content = assistantText
-                  return next
-                })
+                if (!data.trimStart().startsWith('{')) {
+                  assistantText += data
+                  setIsThinking(false)
+                  setMessages(prev => {
+                    const next = [...prev]
+                    const last = next[next.length - 1]
+                    if (last?.role === 'assistant') last.content = assistantText
+                    return next
+                  })
+                }
                 continue
               }
               throw e
@@ -324,17 +411,26 @@ export default function TradeSenseAiTestPage() {
       }
     }
 
-    return { text: assistantText, suggestions: streamSuggestions, exerciseSuggestion: streamExercise }
+    return {
+      text: assistantText,
+      suggestions: streamSuggestions,
+      exerciseSuggestion: streamExercise
+    }
   }
 
-  const sendMessage = async () => {
-    const text = input.trim()
+  const sendMessage = async (overrideText = null) => {
+    const text = (typeof overrideText === 'string' ? overrideText : input).trim()
     if (!text || sending) return
 
     setSending(true)
-    setInput('')
+    setIsThinking(true)
+    if (overrideText == null) setInput('')
 
-    setMessages(prev => [...prev, { role: 'user', content: text }, { role: 'assistant', content: '' }])
+    setMessages(prev => [
+      ...prev,
+      { role: 'user', content: text, id: `local-user-${Date.now()}` },
+      { role: 'assistant', content: '', id: `local-assistant-${Date.now()}` }
+    ])
 
     try {
       const res = await fetch('/api/bot', {
@@ -382,6 +478,7 @@ export default function TradeSenseAiTestPage() {
           return next
         })
       }
+
     } catch (e) {
       setMessages(prev => {
         const next = [...prev]
@@ -393,6 +490,7 @@ export default function TradeSenseAiTestPage() {
       })
     } finally {
       setSending(false)
+      setIsThinking(false)
       endRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' })
     }
   }
@@ -401,7 +499,7 @@ export default function TradeSenseAiTestPage() {
     <div className='flex min-h-0 flex-1 flex-col'>
       <DashboardHeader
         title='Trade Sense AI (Test)'
-        description='End-to-end chat test: dashboard → Node proxy → Trade Sense AI FastAPI → LLM.'
+        description='Therapeutic companion for trading psychology — warm, grounded, trader-aware.'
       />
 
       <main className='flex min-h-0 flex-1 flex-col px-4 py-4 md:px-6 md:pb-6'>
@@ -409,20 +507,42 @@ export default function TradeSenseAiTestPage() {
           <CardContent className='flex min-h-0 flex-1 flex-col p-0'>
             <div className='flex min-h-[calc(100dvh-8.5rem)] flex-1 flex-col'>
               <div className='flex-1 space-y-4 overflow-y-auto p-4 md:p-5'>
-                {messages.length === 0 ? (
+                {loadingHistory ? (
                   <div className='space-y-3'>
+                    <p className='text-sm text-muted-foreground'>Loading today&apos;s session…</p>
+                    <div className='h-16 animate-pulse rounded-2xl bg-muted/50' />
+                    <div className='ml-auto h-12 w-2/3 animate-pulse rounded-2xl bg-muted/40' />
+                  </div>
+                ) : messages.length === 0 ? (
+                  <div className='space-y-4'>
                     <p className='text-sm text-muted-foreground'>
-                      Type a message and press send. Suggestions will appear directly in chat cards.
+                      Trade Sense AI is here when the markets get personal. Tap a prompt or type what&apos;s on your mind.
                     </p>
-                    <div className='space-y-2'>
-                      {Array.from({ length: 4 }).map((_, i) => (
-                        <Skeleton key={i} className='h-14 w-full rounded-xl' />
+                    <div className='flex flex-wrap gap-2'>
+                      {CONVERSATION_STARTERS.map(starter => (
+                        <button
+                          key={starter}
+                          type='button'
+                          disabled={sending}
+                          onClick={() => sendMessage(starter)}
+                          className='rounded-full border bg-background px-3 py-1.5 text-sm text-foreground shadow-sm transition-colors hover:bg-muted disabled:opacity-50'
+                        >
+                          {starter}
+                        </button>
                       ))}
                     </div>
                   </div>
                 ) : (
-                  messages.map((m, idx) => (
-                    <div key={`${m.role}-${idx}`} className={`max-w-[92%] ${m.role === 'user' ? 'ml-auto' : ''}`}>
+                  <>
+                    <p className='text-xs text-muted-foreground'>
+                      Today&apos;s session · {Math.ceil(messages.length / 2)} turn
+                      {Math.ceil(messages.length / 2) === 1 ? '' : 's'} from database
+                    </p>
+                    {messages.map((m, idx) => (
+                      <div
+                        key={m.id || `${m.role}-${idx}`}
+                        className={`max-w-[92%] ${m.role === 'user' ? 'ml-auto' : ''}`}
+                      >
                       <div
                         className={
                           m.role === 'user'
@@ -437,7 +557,10 @@ export default function TradeSenseAiTestPage() {
                         >
                           {m.role === 'user' ? 'You' : 'Trade Sense AI'}
                         </p>
-                        {m.role === 'assistant' && !m.content && sending && idx === messages.length - 1 ? (
+                        {m.role === 'assistant' &&
+                        !m.content &&
+                        (sending || isThinking) &&
+                        idx === messages.length - 1 ? (
                           <div className='flex items-center gap-1 py-1' aria-label='Trade Sense AI is typing'>
                             <span className='size-1.5 animate-bounce rounded-full bg-muted-foreground [animation-delay:-0.2s]' />
                             <span className='size-1.5 animate-bounce rounded-full bg-muted-foreground [animation-delay:-0.1s]' />
@@ -545,7 +668,8 @@ export default function TradeSenseAiTestPage() {
                         </div>
                       ) : null}
                     </div>
-                  ))
+                  ))}
+                  </>
                 )}
                 <div ref={endRef} />
               </div>
@@ -559,15 +683,18 @@ export default function TradeSenseAiTestPage() {
                     className='min-h-[96px] resize-none rounded-xl'
                     disabled={sending}
                     onKeyDown={e => {
-                      if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') sendMessage()
+                      if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault()
+                        sendMessage()
+                      }
                     }}
                   />
 
                   <div className='flex items-center justify-between gap-3'>
                     <p className='text-xs text-muted-foreground'>
-                      Tip: Ctrl/⌘ + Enter to send
+                      Enter to send · Shift+Enter for a new line
                     </p>
-                    <Button onClick={sendMessage} disabled={!canSend} className='rounded-xl px-5'>
+                    <Button onClick={() => sendMessage()} disabled={!canSend} className='rounded-xl px-5'>
                       <SendHorizontal className='size-4' />
                       {sending ? 'Sending...' : 'Send'}
                     </Button>
@@ -580,7 +707,7 @@ export default function TradeSenseAiTestPage() {
       </main>
 
       <Dialog open={Boolean(selectedSuggestion)} onOpenChange={open => !open && setSelectedSuggestion(null)}>
-        <DialogContent className='flex max-h-[90vh] flex-col overflow-hidden sm:max-w-2xl'>
+        <DialogContent className='flex max-h-[90vh] flex-col overflow-hidden sm:max-w-4xl'>
           <DialogHeader>
             <DialogTitle>{selectedSuggestion?.title || 'Suggested audio'}</DialogTitle>
             <DialogDescription>

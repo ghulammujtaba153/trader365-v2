@@ -69,7 +69,7 @@ export default function AssignCategoryDialog({ open, onOpenChange, user, onSaved
   return (
     <>
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className='sm:max-w-lg'>
+      <DialogContent className='sm:max-w-4xl'>
         <DialogHeader>
           <DialogTitle>Assign category</DialogTitle>
           <DialogDescription>Choose a category for {user.name}.</DialogDescription>

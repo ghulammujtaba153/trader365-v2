@@ -74,7 +74,7 @@ export default function QuoteFormDialog({ open, onOpenChange, quote, onSaved }) 
   return (
     <>
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className='sm:max-w-lg'>
+      <DialogContent className='sm:max-w-4xl'>
         <DialogHeader>
           <DialogTitle>{isEdit ? 'Edit quote' : 'Add quote'}</DialogTitle>
           <DialogDescription>Keep it short — max {MAX_LENGTH} characters.</DialogDescription>

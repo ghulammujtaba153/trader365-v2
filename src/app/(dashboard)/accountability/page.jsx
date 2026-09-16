@@ -19,6 +19,7 @@ import { ConfirmDialog } from '@/components/common/confirm-dialog'
 import { TablePagination, usePagination } from '@/components/common/table-pagination'
 import GoalViewDialog from '@/components/accountability/goal-view-dialog'
 import DashboardHeader from '@/components/layout/dashboard-header'
+import MetricCard from '@/components/dashboard/metric-card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
@@ -33,46 +34,34 @@ import {
   TableRow
 } from '@/components/ui/table'
 
-const STAT_CARDS = [
+const FILTERS = [
   {
-    value: 'all',
-    label: 'Total',
-    statKey: 'total',
+    id: 'all',
+    title: 'All goals',
+    subtitle: 'Every habit & goal',
     icon: CircleDot,
-    accent: 'text-muted-foreground',
-    selectedBorder: 'border-foreground/40',
-    selectedBg: 'bg-muted/60',
-    selectedBar: 'bg-primary/50'
+    match: () => true
   },
   {
-    value: 'active',
-    label: 'Active',
-    statKey: 'active',
+    id: 'active',
+    title: 'Active',
+    subtitle: 'In progress',
     icon: Flag,
-    accent: 'text-primary',
-    selectedBorder: 'border-primary',
-    selectedBg: 'bg-primary/5',
-    selectedBar: 'bg-primary'
+    match: goal => goal.status === 'active'
   },
   {
-    value: 'completed',
-    label: 'Completed',
-    statKey: 'completed',
+    id: 'completed',
+    title: 'Completed',
+    subtitle: 'Finished goals',
     icon: CheckCircle2,
-    accent: 'text-emerald-600',
-    selectedBorder: 'border-emerald-600',
-    selectedBg: 'bg-emerald-50',
-    selectedBar: 'bg-emerald-600'
+    match: goal => goal.status === 'completed'
   },
   {
-    value: 'pending',
-    label: 'Pending',
-    statKey: 'pending',
+    id: 'pending',
+    title: 'Pending',
+    subtitle: 'Not started yet',
     icon: CircleDashed,
-    accent: 'text-amber-600',
-    selectedBorder: 'border-amber-500',
-    selectedBg: 'bg-amber-50',
-    selectedBar: 'bg-amber-500'
+    match: goal => goal.status === 'pending'
   }
 ]
 
@@ -108,7 +97,6 @@ const statusBadgeVariant = status => {
 
 export default function AccountabilityPage() {
   const [goals, setGoals] = useState([])
-  const [stats, setStats] = useState({ active: 0, completed: 0, total: 0, pending: 0 })
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState('all')
@@ -123,18 +111,10 @@ export default function AccountabilityPage() {
       if (!Array.isArray(res.data)) {
         toast.error('Unexpected response format from server')
         setGoals([])
-        setStats({ active: 0, completed: 0, total: 0, pending: 0 })
         return
       }
 
-      const goalsWithId = res.data.map(normalizeGoalRow)
-      setGoals(goalsWithId)
-      setStats({
-        active: goalsWithId.filter(g => g.status === 'active').length,
-        completed: goalsWithId.filter(g => g.status === 'completed').length,
-        pending: goalsWithId.filter(g => g.status === 'pending').length,
-        total: goalsWithId.length
-      })
+      setGoals(res.data.map(normalizeGoalRow))
     } catch {
       toast.error('Failed to load goals')
       setGoals([])
@@ -149,12 +129,18 @@ export default function AccountabilityPage() {
     })
   }, [])
 
+  const counts = useMemo(() => {
+    const next = {}
+    for (const item of FILTERS) next[item.id] = goals.filter(item.match).length
+    return next
+  }, [goals])
+
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase()
+    const matcher = FILTERS.find(item => item.id === statusFilter)?.match || (() => true)
 
     return goals.filter(goal => {
-      const matchesStatus = statusFilter === 'all' || goal.status === statusFilter
-      if (!matchesStatus) return false
+      if (!matcher(goal)) return false
       if (!q) return true
 
       const name = goal.userId?.name?.toLowerCase() || ''
@@ -183,8 +169,34 @@ export default function AccountabilityPage() {
         description='Review user goals and habits — status, frequency, and targets.'
       />
 
-      <main className='flex-1 space-y-4 px-4 py-4 md:px-6 md:pb-6'>
-        <div className='flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between'>
+      <main className='flex-1 space-y-4 px-3 py-4 sm:px-4 md:px-6 md:pb-6'>
+        <div className='grid grid-cols-2 gap-2.5 sm:gap-3 lg:grid-cols-4'>
+          {FILTERS.map(item => {
+            const selected = statusFilter === item.id
+            const Icon = item.icon
+            return (
+              <button
+                key={item.id}
+                type='button'
+                onClick={() => setStatusFilter(item.id)}
+                className={cn(
+                  'min-w-0 w-full rounded-xl text-left transition-shadow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                  selected && 'ring-2 ring-foreground/20'
+                )}
+              >
+                <MetricCard
+                  title={item.title}
+                  value={counts[item.id] || 0}
+                  subtitle={selected ? 'Filtering list' : item.subtitle}
+                  icon={Icon}
+                  format='number'
+                />
+              </button>
+            )
+          })}
+        </div>
+
+        <div className='flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-3'>
           <div className='relative w-full sm:max-w-sm'>
             <Search className='pointer-events-none absolute top-1/2 left-2.5 size-4 -translate-y-1/2 text-muted-foreground' />
             <Input
@@ -194,64 +206,12 @@ export default function AccountabilityPage() {
               className='pl-8'
             />
           </div>
-          <p className='text-sm text-muted-foreground'>
+          <p className='shrink-0 text-sm text-muted-foreground'>
             {filtered.length} of {goals.length} goals
           </p>
         </div>
 
-        <div className='grid grid-cols-2 gap-3 sm:grid-cols-4'>
-          {STAT_CARDS.map(card => {
-            const Icon = card.icon
-            const selected = statusFilter === card.value
-            const count = stats[card.statKey] ?? 0
-
-            return (
-              <button
-                key={card.value}
-                type='button'
-                aria-pressed={selected}
-                onClick={() => setStatusFilter(card.value)}
-                className={cn(
-                  'relative overflow-hidden rounded-xl border bg-card text-left transition-colors',
-                  'hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-                  selected ? cn(card.selectedBorder, card.selectedBg) : 'border-border'
-                )}
-              >
-                {selected ? (
-                  <span className={cn('absolute inset-y-0 left-0 w-1', card.selectedBar)} />
-                ) : null}
-                <div className='flex items-start justify-between gap-3 p-4'>
-                  <div className='min-w-0 flex-1'>
-                    <p className='text-[11px] font-semibold uppercase tracking-wide text-muted-foreground'>
-                      {card.label}
-                    </p>
-                    <p
-                      className={cn(
-                        'mt-1 text-2xl font-semibold tracking-tight',
-                        selected && card.accent
-                      )}
-                    >
-                      {count}
-                    </p>
-                    <p className='mt-1 text-xs text-muted-foreground'>
-                      {selected ? 'Showing these' : 'Click to filter'}
-                    </p>
-                  </div>
-                  <div
-                    className={cn(
-                      'grid size-10 shrink-0 place-items-center rounded-xl bg-muted',
-                      card.accent
-                    )}
-                  >
-                    <Icon className='size-5' />
-                  </div>
-                </div>
-              </button>
-            )
-          })}
-        </div>
-
-        <Card>
+        <Card className='min-w-0 overflow-hidden'>
           <CardContent className='p-0'>
             {loading ? (
               <div className='space-y-3 p-4'>
@@ -266,15 +226,15 @@ export default function AccountabilityPage() {
             ) : (
               <>
                 <div className='overflow-x-auto'>
-                  <Table>
+                  <Table className='min-w-[640px]'>
                     <TableHeader>
                       <TableRow>
                         <TableHead>User</TableHead>
                         <TableHead>Title</TableHead>
-                        <TableHead>Frequency</TableHead>
+                        <TableHead className='hidden sm:table-cell'>Frequency</TableHead>
                         <TableHead>Status</TableHead>
-                        <TableHead>Target date</TableHead>
-                        <TableHead>Created</TableHead>
+                        <TableHead className='hidden md:table-cell'>Target date</TableHead>
+                        <TableHead className='hidden lg:table-cell'>Created</TableHead>
                         <TableHead className='text-right'>Actions</TableHead>
                       </TableRow>
                     </TableHeader>
@@ -287,7 +247,7 @@ export default function AccountabilityPage() {
 
                         return (
                           <TableRow key={goal._id || goal.id}>
-                            <TableCell className='font-medium'>
+                            <TableCell className='max-w-[8rem] truncate font-medium sm:max-w-none'>
                               {userId ? (
                                 <Link
                                   href={`/users/${userId}`}
@@ -299,10 +259,10 @@ export default function AccountabilityPage() {
                                 userName
                               )}
                             </TableCell>
-                            <TableCell className='max-w-56 truncate' title={goal.title}>
+                            <TableCell className='max-w-[10rem] truncate sm:max-w-56' title={goal.title}>
                               {goal.title || '—'}
                             </TableCell>
-                            <TableCell>
+                            <TableCell className='hidden sm:table-cell'>
                               <Badge variant='outline' className='capitalize'>
                                 {capitalize(goal.frequency)}
                               </Badge>
@@ -315,10 +275,10 @@ export default function AccountabilityPage() {
                                 {capitalize(goal.status)}
                               </Badge>
                             </TableCell>
-                            <TableCell className='text-muted-foreground'>
+                            <TableCell className='hidden text-muted-foreground md:table-cell'>
                               {formatDate(goal.targetDate)}
                             </TableCell>
-                            <TableCell className='text-muted-foreground whitespace-nowrap'>
+                            <TableCell className='hidden whitespace-nowrap text-muted-foreground lg:table-cell'>
                               {formatDate(goal.createdAt, true)}
                             </TableCell>
                             <TableCell className='text-right'>

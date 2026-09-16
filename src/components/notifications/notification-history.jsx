@@ -379,7 +379,7 @@ export default function NotificationHistory({
       </Card>
 
       <Dialog open={Boolean(viewItem)} onOpenChange={open => !open && setViewItem(null)}>
-        <DialogContent className='flex max-h-[90vh] flex-col overflow-hidden sm:max-w-lg'>
+        <DialogContent className='flex max-h-[90vh] flex-col overflow-hidden sm:max-w-4xl'>
           <DialogHeader className='shrink-0'>
             <DialogTitle>{viewItem?.title || 'Notification'}</DialogTitle>
             <DialogDescription>Delivery details and recipient sample</DialogDescription>

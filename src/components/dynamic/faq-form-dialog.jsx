@@ -84,7 +84,7 @@ export default function FaqFormDialog({ open, onOpenChange, mode = 'add', faq, o
   return (
     <>
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className='flex max-h-[90vh] flex-col overflow-hidden sm:max-w-lg'>
+      <DialogContent className='flex max-h-[90vh] flex-col overflow-hidden sm:max-w-4xl'>
         <DialogHeader className='shrink-0'>
           <DialogTitle>{title}</DialogTitle>
           <DialogDescription>{description}</DialogDescription>

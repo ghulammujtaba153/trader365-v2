@@ -6,6 +6,8 @@ import api from '@/lib/api'
 
 const AuthContext = createContext(null)
 
+const canUseDashboard = user => user?.role === 'admin' || user?.role === 'editor'
+
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -29,9 +31,9 @@ export function AuthProvider({ children }) {
     const fetchedUser = response?.data?.user
     if (!fetchedUser) throw new Error('User not found')
 
-    if (fetchedUser.role !== 'admin') {
+    if (!canUseDashboard(fetchedUser)) {
       await logout()
-      const error = new Error('Access denied. Admin accounts only.')
+      const error = new Error('Access denied. Admin or instructor accounts only.')
       error.code = 'UNAUTHORIZED'
       throw error
     }
@@ -67,9 +69,9 @@ export function AuthProvider({ children }) {
       throw new Error(response.data?.message || 'Login failed')
     }
 
-    if (loggedInUser.role !== 'admin') {
+    if (!canUseDashboard(loggedInUser)) {
       await api.post('/api/auth/logout').catch(() => {})
-      const error = new Error('Access denied. Admin accounts only.')
+      const error = new Error('Access denied. Admin or instructor accounts only.')
       error.code = 'UNAUTHORIZED'
       throw error
     }

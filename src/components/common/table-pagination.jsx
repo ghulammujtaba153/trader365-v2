@@ -69,11 +69,11 @@ export function TablePagination({
         className
       )}
     >
-      <p className='text-sm text-muted-foreground'>
+      <p className='text-center text-sm text-muted-foreground sm:text-left'>
         {totalItems === 0 ? 'No results' : `Showing ${from}–${to} of ${totalItems}`}
       </p>
 
-      <div className='flex flex-wrap items-center gap-3'>
+      <div className='flex flex-wrap items-center justify-center gap-3 sm:justify-end'>
         <label className='flex items-center gap-2 text-sm text-muted-foreground'>
           Rows
           <select
@@ -93,6 +93,7 @@ export function TablePagination({
           <Button
             variant='outline'
             size='icon-sm'
+            className='hidden sm:inline-flex'
             disabled={page <= 1}
             onClick={() => onPageChange?.(1)}
             aria-label='First page'
@@ -108,8 +109,8 @@ export function TablePagination({
           >
             <ChevronLeft className='size-4' />
           </Button>
-          <span className='min-w-24 px-2 text-center text-sm tabular-nums'>
-            Page {page} of {totalPages}
+          <span className='min-w-20 px-1 text-center text-sm tabular-nums sm:min-w-24 sm:px-2'>
+            {page}/{totalPages}
           </span>
           <Button
             variant='outline'
@@ -123,6 +124,7 @@ export function TablePagination({
           <Button
             variant='outline'
             size='icon-sm'
+            className='hidden sm:inline-flex'
             disabled={page >= totalPages}
             onClick={() => onPageChange?.(totalPages)}
             aria-label='Last page'

@@ -139,7 +139,7 @@ export default function AdminFormDialog({ open, onOpenChange, admin, onSaved }) 
   return (
     <>
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className='flex max-h-[90vh] flex-col overflow-hidden sm:max-w-2xl'>
+      <DialogContent className='flex max-h-[90vh] flex-col overflow-hidden sm:max-w-4xl'>
         <DialogHeader className='shrink-0'>
           <DialogTitle>{isEdit ? 'Edit admin' : 'Add admin'}</DialogTitle>
           <DialogDescription>Set this admin’s role and which dashboard pages they can open.</DialogDescription>

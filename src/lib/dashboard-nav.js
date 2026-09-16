@@ -43,13 +43,14 @@ export const NAV_ITEMS = [
     icon: Sparkles,
     group: 'Overview',
   },
-  {
-    type: 'link',
-    href: '/trade-sense-ai',
-    label: 'Trade Sense AI',
-    icon: Brain,
-    group: 'Overview',
-  },
+  // Hidden from sidebar for now — page still exists at /trade-sense-ai
+  // {
+  //   type: 'link',
+  //   href: '/trade-sense-ai',
+  //   label: 'Trade Sense AI',
+  //   icon: Brain,
+  //   group: 'Overview',
+  // },
   {
     type: 'group',
     id: 'discovery',

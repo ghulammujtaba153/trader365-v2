@@ -169,7 +169,7 @@ export default function DailyThoughtFormDialog({ open, onOpenChange, thought, on
   return (
     <>
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className='flex max-h-[90vh] flex-col overflow-hidden sm:max-w-2xl'>
+      <DialogContent className='flex max-h-[90vh] flex-col overflow-hidden sm:max-w-4xl'>
         <DialogHeader className='shrink-0'>
           <DialogTitle>{isEdit ? 'Edit daily thought' : 'Add daily thought'}</DialogTitle>
           <DialogDescription>Details, instructor, and media for this thought.</DialogDescription>

@@ -11,6 +11,8 @@ import {
   DialogTitle
 } from '@/components/ui/dialog'
 import { formatDateTime, formatLabel, formatRoleLabel } from '@/lib/format'
+import { resolveDashboardAccess } from '@/lib/dashboard-access'
+import { DASHBOARD_PERMISSIONS } from '@/lib/dashboard-access'
 
 function MetaField({ label, value, children }) {
   return (
@@ -31,13 +33,17 @@ export default function InstructorViewDialog({ open, onOpenChange, instructor })
   if (!instructor) return null
 
   const categories = Array.isArray(instructor.categories) ? instructor.categories : []
+  const accessIds = resolveDashboardAccess({ ...instructor, role: 'editor' })
+  const accessLabels = DASHBOARD_PERMISSIONS.filter(item => accessIds.includes(item.id)).map(
+    item => item.label
+  )
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className='flex max-h-[90vh] flex-col overflow-hidden sm:max-w-lg'>
+      <DialogContent className='flex max-h-[90vh] flex-col overflow-hidden sm:max-w-4xl'>
         <DialogHeader className='shrink-0'>
           <DialogTitle className='pr-6'>{instructor.name || 'Instructor'}</DialogTitle>
-          <DialogDescription>Instructor details</DialogDescription>
+          <DialogDescription>Instructor details and dashboard access</DialogDescription>
         </DialogHeader>
 
         <div className='scrollbar-thin min-h-0 flex-1 space-y-4 overflow-y-auto pr-1'>
@@ -55,6 +61,23 @@ export default function InstructorViewDialog({ open, onOpenChange, instructor })
             <MetaField label='Status' value={formatLabel(instructor.status)} />
             <MetaField label='Created' value={formatDateTime(instructor.createdAt)} />
             <MetaField label='Updated' value={formatDateTime(instructor.updatedAt)} />
+          </div>
+
+          <div>
+            <p className='mb-2 text-[11px] font-medium uppercase tracking-wide text-muted-foreground'>
+              Dashboard access ({accessLabels.length})
+            </p>
+            {accessLabels.length ? (
+              <div className='flex flex-wrap gap-1.5'>
+                {accessLabels.map(label => (
+                  <Badge key={label} variant='outline'>
+                    {label}
+                  </Badge>
+                ))}
+              </div>
+            ) : (
+              <p className='text-sm text-muted-foreground'>No dashboard pages assigned.</p>
+            )}
           </div>
 
           <div>

@@ -84,37 +84,38 @@
 }
 
 .dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
+  /* Trade Sense AI / mobile dark surfaces */
+  --background: #0b1016;
+  --foreground: #ffffff;
+  --card: #161b22;
+  --card-foreground: #ffffff;
+  --popover: #161b22;
+  --popover-foreground: #ffffff;
   --primary: #70c5e8;
   --primary-foreground: #ffffff;
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
+  --secondary: #1c232c;
+  --secondary-foreground: #f8fafc;
+  --muted: #1c232c;
+  --muted-foreground: #94a3b8;
+  --accent: #1c232c;
+  --accent-foreground: #f8fafc;
   --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
+  --border: rgb(148 163 184 / 14%);
+  --input: rgb(148 163 184 / 18%);
+  --ring: #70c5e8;
   --chart-1: #70c5e8;
   --chart-2: #5bb8e0;
   --chart-3: #8ad4ef;
   --chart-4: #4ba8d0;
   --chart-5: #a3dff3;
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.922 0 0);
-  --sidebar-primary-foreground: oklch(0.205 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+  --sidebar: #080c12;
+  --sidebar-foreground: #f8fafc;
+  --sidebar-primary: #70c5e8;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #161b22;
+  --sidebar-accent-foreground: #f8fafc;
+  --sidebar-border: rgb(148 163 184 / 16%);
+  --sidebar-ring: #70c5e8;
 }
 
 @layer base {

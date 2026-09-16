@@ -58,6 +58,51 @@ export const ACCESS_PRESETS = [
   }
 ]
 
+/** Default / preset access for instructors (no admin or user-management pages). */
+export const INSTRUCTOR_DEFAULT_ACCESS = [
+  'home',
+  'resources',
+  'pillars',
+  'content',
+  'tags',
+  'music',
+  'daily-thought',
+  'daily-quote',
+  'livestreams'
+]
+
+export const INSTRUCTOR_ACCESS_PRESETS = [
+  {
+    id: 'instructor-content',
+    label: 'Content (default)',
+    ids: INSTRUCTOR_DEFAULT_ACCESS
+  },
+  {
+    id: 'instructor-content-analytics',
+    label: 'Content + analytics',
+    ids: ['analytics', ...INSTRUCTOR_DEFAULT_ACCESS]
+  },
+  {
+    id: 'instructor-full-content',
+    label: 'All content tools',
+    ids: [
+      'home',
+      'analytics',
+      'resources',
+      'pillars',
+      'content',
+      'tags',
+      'music',
+      'daily-thought',
+      'daily-quote',
+      'livestreams',
+      'onboarding',
+      'dynamic',
+      'welcome'
+    ]
+  }
+]
+
 const PATH_RULES = [
   { id: 'admins', test: path => path.startsWith('/users/admins') },
   { id: 'instructors', test: path => path.startsWith('/users/instructors') },
@@ -115,7 +160,11 @@ export function permissionForPath(pathname) {
 export function resolveDashboardAccess(user) {
   if (!user) return []
   if (user.isSuperAdmin) return [...DASHBOARD_PERMISSION_IDS]
-  if (!Array.isArray(user.dashboardAccess)) return [...DASHBOARD_PERMISSION_IDS]
+  if (!Array.isArray(user.dashboardAccess)) {
+    // Legacy admins: missing access = full. Instructors: content-safe default.
+    if (user.role === 'editor') return [...INSTRUCTOR_DEFAULT_ACCESS]
+    return [...DASHBOARD_PERMISSION_IDS]
+  }
   return user.dashboardAccess.filter(id => DASHBOARD_PERMISSION_IDS.includes(id))
 }
 

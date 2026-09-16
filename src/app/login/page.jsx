@@ -31,14 +31,15 @@ export default function LoginPage() {
 
           <div className='relative z-10 max-w-md space-y-4'>
             <p className='text-xs font-semibold tracking-[0.22em] text-cyan-300/80 uppercase'>
-              Admin access
+              Staff access
             </p>
             <h1 className='text-4xl font-semibold tracking-tight xl:text-5xl'>
               Trade with
               <span className='block text-cyan-300'>clarity and control.</span>
             </h1>
             <p className='max-w-sm text-sm leading-relaxed text-white/60'>
-              Sign in to manage users, content, subscriptions, and operations from one dashboard.
+              Sign in as an admin or instructor to manage users, content, subscriptions, and
+              operations from one dashboard.
             </p>
           </div>
 

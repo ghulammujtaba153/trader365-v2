@@ -1,10 +1,12 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { Bell, LogOut } from 'lucide-react'
+import { LogOut } from 'lucide-react'
 
 import { useAuth } from '@/contexts/auth-context'
 import { SidebarToggle } from '@/components/layout/app-sidebar'
+import HeaderNotifications from '@/components/layout/header-notifications'
+import ThemeToggle from '@/components/layout/theme-toggle'
 import WorkspaceSearch from '@/components/layout/workspace-search'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
@@ -49,15 +51,9 @@ export default function DashboardHeader({ title, description }) {
             <WorkspaceSearch />
           </div>
 
-          <Button
-            variant='outline'
-            size='icon-sm'
-            className='relative border-border/80 bg-background/80 shadow-sm'
-            aria-label='Notifications'
-          >
-            <Bell />
-            <span className='absolute top-1.5 right-1.5 size-1.5 rounded-full bg-primary' />
-          </Button>
+          <ThemeToggle />
+
+          <HeaderNotifications />
 
           <DropdownMenu>
             <DropdownMenuTrigger

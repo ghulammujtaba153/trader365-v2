@@ -69,7 +69,7 @@ export default function TradeViewDialog({ open, onOpenChange, trade }) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className='flex max-h-[90vh] flex-col overflow-hidden sm:max-w-2xl'>
+      <DialogContent className='flex max-h-[90vh] flex-col overflow-hidden sm:max-w-4xl'>
         <DialogHeader className='shrink-0'>
           <DialogTitle>{title}</DialogTitle>
         </DialogHeader>

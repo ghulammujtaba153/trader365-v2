@@ -10,7 +10,7 @@ export default function UnauthorizedPage() {
     <StatusPage
       code='401'
       title='Unauthorized'
-      description='This dashboard is for admin accounts only. Sign in with an authorized admin account, or return to a page you can access.'
+      description='This dashboard is for admin and instructor accounts. Sign in with an authorized staff account, or return to a page you can access.'
       icon='shield-off'
       primaryHref='/login'
       primaryLabel='Sign in'

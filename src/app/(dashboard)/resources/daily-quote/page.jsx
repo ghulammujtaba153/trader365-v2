@@ -183,7 +183,7 @@ export default function DailyQuotePage() {
       />
 
       <Dialog open={Boolean(viewQuote)} onOpenChange={open => !open && setViewQuote(null)}>
-        <DialogContent className='sm:max-w-lg'>
+        <DialogContent className='sm:max-w-4xl'>
           <DialogHeader>
             <DialogTitle>Daily quote</DialogTitle>
             <DialogDescription>

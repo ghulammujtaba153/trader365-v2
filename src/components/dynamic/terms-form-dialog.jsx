@@ -83,7 +83,7 @@ export default function TermsFormDialog({ open, onOpenChange, term, onSaved }) {
   return (
     <>
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className='flex max-h-[90vh] flex-col overflow-hidden sm:max-w-3xl'>
+      <DialogContent className='flex max-h-[90vh] flex-col overflow-hidden sm:max-w-4xl'>
         <DialogHeader className='shrink-0'>
           <DialogTitle>{isEdit ? 'Edit terms' : 'Add terms'}</DialogTitle>
           <DialogDescription>

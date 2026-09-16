@@ -264,7 +264,7 @@ export default function ComposeNotification({ open, onOpenChange, onSent }) {
           if (!next) resetForm()
         }}
       >
-        <DialogContent className='flex max-h-[90vh] w-full flex-col gap-0 overflow-hidden p-0 sm:max-w-2xl'>
+        <DialogContent className='flex max-h-[90vh] w-full flex-col gap-0 overflow-hidden p-0 sm:max-w-4xl'>
           <DialogHeader className='shrink-0 space-y-3 border-b border-border px-4 py-4 pr-12 text-left'>
             <div className='space-y-1.5'>
               <DialogTitle className='text-lg'>New notification</DialogTitle>

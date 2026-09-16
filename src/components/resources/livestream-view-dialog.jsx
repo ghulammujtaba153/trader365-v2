@@ -31,7 +31,7 @@ export default function LivestreamViewDialog({ open, onOpenChange, livestream })
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className='flex max-h-[90vh] flex-col overflow-hidden p-0 sm:max-w-2xl'>
+      <DialogContent className='flex max-h-[90vh] flex-col overflow-hidden p-0 sm:max-w-4xl'>
         <div className='scrollbar-thin min-h-0 flex-1 overflow-y-auto'>
         <div className='relative min-h-48 overflow-hidden bg-muted'>
           {livestream.thumbnail ? (

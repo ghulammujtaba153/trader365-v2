@@ -173,7 +173,7 @@ export default function UserFormDialog({ open, onOpenChange, user, onSaved }) {
   return (
     <>
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className='flex max-h-[90vh] flex-col overflow-hidden sm:max-w-2xl'>
+      <DialogContent className='flex max-h-[90vh] flex-col overflow-hidden sm:max-w-4xl'>
         <DialogHeader className='shrink-0'>
           <DialogTitle>{isEdit ? 'Edit user' : 'Add user'}</DialogTitle>
           <DialogDescription>

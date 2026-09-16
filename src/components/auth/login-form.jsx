@@ -6,6 +6,7 @@ import { Eye, EyeOff, Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
 
 import { useAuth } from '@/contexts/auth-context'
+import { firstAllowedPath } from '@/lib/dashboard-access'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -27,12 +28,13 @@ export default function LoginForm() {
     setError('')
 
     try {
-      await login(email.trim(), password)
+      const loggedInUser = await login(email.trim(), password)
       toast.success('Signed in successfully')
-      const next = searchParams.get('next') || '/home'
-      router.replace(next.startsWith('/') ? next : '/home')
+      const next = searchParams.get('next')
+      const fallback = firstAllowedPath(loggedInUser)
+      router.replace(next && next.startsWith('/') ? next : fallback)
     } catch (err) {
-      if (err.code === 'UNAUTHORIZED' || /admin accounts only/i.test(err.message || '')) {
+      if (err.code === 'UNAUTHORIZED' || /admin or instructor accounts only/i.test(err.message || '')) {
         router.replace('/unauthorized')
         return
       }
@@ -64,7 +66,7 @@ export default function LoginForm() {
         <div className='space-y-1.5'>
           <CardTitle className='text-2xl font-semibold tracking-tight'>Welcome back</CardTitle>
           <CardDescription className='text-[15px] leading-relaxed'>
-            Sign in with your admin account to open the dashboard.
+            Sign in with your admin or instructor account to open the dashboard.
           </CardDescription>
         </div>
       </CardHeader>

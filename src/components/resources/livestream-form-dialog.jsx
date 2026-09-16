@@ -321,7 +321,7 @@ export default function LivestreamFormDialog({ open, onOpenChange, livestream, o
   return (
     <>
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className='flex max-h-[90vh] flex-col overflow-hidden sm:max-w-2xl'>
+      <DialogContent className='flex max-h-[90vh] flex-col overflow-hidden sm:max-w-4xl'>
         <DialogHeader className='shrink-0'>
           <DialogTitle>{isEdit ? 'Edit livestream' : 'Add livestream'}</DialogTitle>
           <DialogDescription>Schedule, media, platforms, and notification timing.</DialogDescription>

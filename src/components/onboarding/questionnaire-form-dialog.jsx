@@ -147,7 +147,7 @@ export default function QuestionnaireFormDialog({ open, onOpenChange, questionna
   return (
     <>
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className='flex max-h-[90vh] flex-col overflow-hidden sm:max-w-2xl'>
+      <DialogContent className='flex max-h-[90vh] flex-col overflow-hidden sm:max-w-4xl'>
         <DialogHeader className='shrink-0'>
           <DialogTitle>{isEdit ? 'Edit questionnaire' : 'Add questionnaire'}</DialogTitle>
           <DialogDescription>Onboarding questions shown to new users.</DialogDescription>

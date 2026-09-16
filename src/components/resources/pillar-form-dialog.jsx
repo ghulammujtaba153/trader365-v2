@@ -118,7 +118,7 @@ export default function PillarFormDialog({ open, onOpenChange, pillar, onSaved }
   return (
     <>
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className='flex max-h-[90vh] flex-col overflow-hidden sm:max-w-lg'>
+      <DialogContent className='flex max-h-[90vh] flex-col overflow-hidden sm:max-w-4xl'>
         <DialogHeader className='shrink-0'>
           <DialogTitle>{isEdit ? 'Update pillar' : 'Add new pillar'}</DialogTitle>
           <DialogDescription>Set the pillar name, cover image, and categories.</DialogDescription>
