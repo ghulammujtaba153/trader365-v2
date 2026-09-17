@@ -47,8 +47,13 @@ export default function LoginPage() {
         </aside>
 
         <div className='relative flex min-h-screen items-center justify-center p-4 sm:p-8'>
-          <div className='absolute inset-0 bg-zinc-50 lg:bg-zinc-100/90' />
-          <LoginPatterns variant='light' />
+          <div className='absolute inset-0 bg-zinc-50 dark:bg-zinc-950 lg:bg-zinc-100/90 lg:dark:bg-zinc-950' />
+          <div className='absolute inset-0 dark:hidden'>
+            <LoginPatterns variant='light' />
+          </div>
+          <div className='absolute inset-0 hidden dark:block'>
+            <LoginPatterns variant='dark' />
+          </div>
 
           <Suspense
             fallback={

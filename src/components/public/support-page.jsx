@@ -31,24 +31,40 @@ const TOPICS = [
   }
 ]
 
+const cardClassName =
+  'border-0 bg-white/90 shadow-sm ring-1 ring-zinc-200/80 dark:bg-zinc-900/90 dark:ring-white/10'
+
+const fieldClassName =
+  'h-10 border-zinc-200 bg-white px-3 text-zinc-950 placeholder:text-zinc-400 ' +
+  'dark:border-white/15 dark:bg-zinc-950 dark:text-zinc-50 dark:placeholder:text-zinc-500'
+
+const textareaClassName =
+  'min-h-28 border-zinc-200 bg-white px-3 text-zinc-950 placeholder:text-zinc-400 ' +
+  'dark:border-white/15 dark:bg-zinc-950 dark:text-zinc-50 dark:placeholder:text-zinc-500'
+
+const labelClassName = 'text-zinc-700 dark:text-zinc-300'
+
 function FaqItem({ item, open, onToggle }) {
   const id = item._id || item.question
 
   return (
     <div
       data-open={open}
-      className='rounded-xl bg-white/90 ring-1 ring-zinc-200/80 transition-shadow duration-500 ease-out data-[open=true]:shadow-sm'
+      className={
+        'rounded-xl bg-white/90 ring-1 ring-zinc-200/80 transition-shadow duration-500 ease-out ' +
+        'data-[open=true]:shadow-sm dark:bg-zinc-900/90 dark:ring-white/10'
+      }
     >
       <button
         type='button'
         aria-expanded={open}
         onClick={() => onToggle(id)}
-        className='flex w-full cursor-pointer items-center justify-between gap-3 px-4 py-3 text-left text-sm font-medium'
+        className='flex w-full cursor-pointer items-center justify-between gap-3 px-4 py-3 text-left text-sm font-medium text-zinc-950 dark:text-zinc-50'
       >
         <span>{item.question}</span>
         <ChevronDown
           className={cn(
-            'size-4 shrink-0 text-muted-foreground transition-transform duration-500 ease-out',
+            'size-4 shrink-0 text-zinc-500 transition-transform duration-500 ease-out dark:text-zinc-400',
             open && 'rotate-180'
           )}
         />
@@ -63,7 +79,7 @@ function FaqItem({ item, open, onToggle }) {
         <div className='overflow-hidden'>
           <p
             className={cn(
-              'border-t border-zinc-100 px-4 py-3 text-sm leading-relaxed text-muted-foreground transition-opacity duration-500 ease-out',
+              'border-t border-zinc-100 px-4 py-3 text-sm leading-relaxed text-zinc-500 transition-opacity duration-500 ease-out dark:border-white/10 dark:text-zinc-400',
               open ? 'opacity-100' : 'opacity-0'
             )}
           >
@@ -160,9 +176,13 @@ export default function SupportPage() {
   return (
     <div className='space-y-8'>
       <div className='space-y-2'>
-        <p className='text-xs font-semibold tracking-[0.18em] text-cyan-700 uppercase'>Help</p>
-        <h1 className='text-3xl font-semibold tracking-tight'>Support Center</h1>
-        <p className='max-w-2xl text-sm leading-relaxed text-muted-foreground'>
+        <p className='text-xs font-semibold tracking-[0.18em] text-cyan-700 uppercase dark:text-cyan-300'>
+          Help
+        </p>
+        <h1 className='text-3xl font-semibold tracking-tight text-zinc-950 dark:text-zinc-50'>
+          Support Center
+        </h1>
+        <p className='max-w-2xl text-sm leading-relaxed text-zinc-500 dark:text-zinc-400'>
           Find answers to common questions or reach out to our team. Use the email on your Trader
           365 account so we can match your request.
         </p>
@@ -172,14 +192,18 @@ export default function SupportPage() {
         {TOPICS.map(topic => {
           const Icon = topic.icon
           return (
-            <Card key={topic.title} className='border-0 bg-white/90 shadow-sm ring-1 ring-zinc-200/80'>
+            <Card key={topic.title} className={cardClassName}>
               <CardHeader className='space-y-3'>
-                <div className='grid size-10 place-items-center rounded-xl bg-zinc-950 text-white'>
+                <div className='grid size-10 place-items-center rounded-xl bg-zinc-950 text-white dark:bg-white dark:text-zinc-950'>
                   <Icon className='size-4' />
                 </div>
                 <div className='space-y-1'>
-                  <CardTitle className='text-base'>{topic.title}</CardTitle>
-                  <CardDescription>{topic.description}</CardDescription>
+                  <CardTitle className='text-base text-zinc-950 dark:text-zinc-50'>
+                    {topic.title}
+                  </CardTitle>
+                  <CardDescription className='text-zinc-500 dark:text-zinc-400'>
+                    {topic.description}
+                  </CardDescription>
                 </div>
               </CardHeader>
             </Card>
@@ -188,7 +212,9 @@ export default function SupportPage() {
       </div>
 
       <section className='space-y-3'>
-        <h2 className='text-xl font-semibold tracking-tight'>Frequently Asked Questions</h2>
+        <h2 className='text-xl font-semibold tracking-tight text-zinc-950 dark:text-zinc-50'>
+          Frequently Asked Questions
+        </h2>
         {faqLoading ? (
           <div className='space-y-2'>
             <Skeleton className='h-12 w-full' />
@@ -196,7 +222,7 @@ export default function SupportPage() {
             <Skeleton className='h-12 w-full' />
           </div>
         ) : faqs.length === 0 ? (
-          <p className='text-sm text-muted-foreground'>No FAQs available yet.</p>
+          <p className='text-sm text-zinc-500 dark:text-zinc-400'>No FAQs available yet.</p>
         ) : (
           <div className='space-y-2'>
             {faqs.map(item => {
@@ -209,29 +235,33 @@ export default function SupportPage() {
         )}
       </section>
 
-      <Card className='border-0 bg-white/90 shadow-sm ring-1 ring-zinc-200/80'>
+      <Card className={cardClassName}>
         <CardHeader>
-          <CardTitle className='text-xl'>Contact Support</CardTitle>
-          <CardDescription>
+          <CardTitle className='text-xl text-zinc-950 dark:text-zinc-50'>Contact Support</CardTitle>
+          <CardDescription className='text-zinc-500 dark:text-zinc-400'>
             Can’t find what you are looking for? Submit your issue below.
           </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className='grid gap-4 sm:grid-cols-2'>
             <div className='space-y-2'>
-              <Label htmlFor='support-name'>Full name</Label>
+              <Label htmlFor='support-name' className={labelClassName}>
+                Full name
+              </Label>
               <Input
                 id='support-name'
                 name='name'
                 value={form.name}
                 onChange={handleChange}
                 placeholder='Jane Trader'
-                className='h-10 bg-background px-3'
+                className={fieldClassName}
                 required
               />
             </div>
             <div className='space-y-2'>
-              <Label htmlFor='support-email'>Email address</Label>
+              <Label htmlFor='support-email' className={labelClassName}>
+                Email address
+              </Label>
               <Input
                 id='support-email'
                 name='email'
@@ -239,12 +269,14 @@ export default function SupportPage() {
                 value={form.email}
                 onChange={handleChange}
                 placeholder='you@example.com'
-                className='h-10 bg-background px-3'
+                className={fieldClassName}
                 required
               />
             </div>
             <div className='space-y-2 sm:col-span-2'>
-              <Label htmlFor='support-message'>Your message</Label>
+              <Label htmlFor='support-message' className={labelClassName}>
+                Your message
+              </Label>
               <Textarea
                 id='support-message'
                 name='message'
@@ -252,7 +284,7 @@ export default function SupportPage() {
                 value={form.message}
                 onChange={handleChange}
                 placeholder='How can we help?'
-                className='min-h-28 bg-background px-3'
+                className={textareaClassName}
                 required
               />
             </div>
