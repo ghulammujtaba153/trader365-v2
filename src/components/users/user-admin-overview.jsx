@@ -257,7 +257,7 @@ export default function UserAdminOverview({ userId, user }) {
           format='time'
         />
         <MetricCard
-          title='Habits'
+          title='Goals'
           value={Number(stats.habits.total) || 0}
           subtitle={`${stats.habits.completed || 0} done now · ${stats.habits.pending || 0} pending · streak ${stats.habits.streak || 0}`}
           icon={Target}
