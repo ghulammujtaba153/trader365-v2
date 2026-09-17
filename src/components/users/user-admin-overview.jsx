@@ -6,6 +6,7 @@ import {
   AlertTriangle,
   Bell,
   Heart,
+  HeartPulse,
   LifeBuoy,
   LineChart,
   Sparkles,
@@ -49,7 +50,9 @@ export default function UserAdminOverview({ userId, user }) {
             api.get(`/api/favorites/${userId}`),
             api.get(`/api/bot/${userId}/stats`),
             api.get(`/api/notifications/${userId}`),
-            api.get(`/api/resource/progress/${userId}`)
+            api.get(`/api/resource/progress/${userId}`),
+            api.get(`/api/therapy-exercises/summary/${userId}`),
+            api.get(`/api/therapy-exercises/streaks/${userId}`)
           ])
           if (!mounted) return
 
@@ -65,7 +68,9 @@ export default function UserAdminOverview({ userId, user }) {
             favRes,
             botRes,
             notifRes,
-            progressRes
+            progressRes,
+            exerciseSummaryRes,
+            exerciseStreaksRes
           ] = results.map(settledValue)
 
           const snapshot = pickSnapshot(subRes?.data)
@@ -85,6 +90,9 @@ export default function UserAdminOverview({ userId, user }) {
           const bot = botRes?.data || {}
           const notifications = asArray(notifRes?.data)
           const progress = asArray(progressRes?.data)
+          const exerciseSummary = exerciseSummaryRes?.data || {}
+          const exerciseStreaks = exerciseStreaksRes?.data || {}
+          const exerciseAll = exerciseStreaks.all || {}
 
           setStats({
             snapshot,
@@ -100,7 +108,14 @@ export default function UserAdminOverview({ userId, user }) {
             favorites,
             bot,
             notifications,
-            progress
+            progress,
+            exercises: {
+              totalCompletions: Number(exerciseAll.totalCompletions) || 0,
+              currentStreak: Number(exerciseAll.currentStreak) || 0,
+              longestStreak: Number(exerciseAll.longestStreak) || 0,
+              completedToday: Number(exerciseSummary.counts?.completedToday) || 0,
+              remainingToday: Number(exerciseSummary.counts?.remainingToday) || 0
+            }
           })
         } catch {
           if (mounted) setStats(null)
@@ -199,7 +214,7 @@ export default function UserAdminOverview({ userId, user }) {
   }, [stats, user])
 
   if (loading) {
-    return <MetricCardsRowSkeleton count={8} />
+    return <MetricCardsRowSkeleton count={9} />
   }
 
   if (!stats) return null
@@ -281,6 +296,12 @@ export default function UserAdminOverview({ userId, user }) {
           value={Number(stats.bot.total) || 0}
           subtitle={`${stats.bot.today || 0} today · ${stats.bot.week || 0} in last 7 days`}
           icon={Sparkles}
+        />
+        <MetricCard
+          title='Exercises'
+          value={Number(stats.exercises?.totalCompletions) || 0}
+          subtitle={`today ${stats.exercises?.completedToday || 0}/3 · streak ${stats.exercises?.currentStreak || 0} · longest ${stats.exercises?.longestStreak || 0}`}
+          icon={HeartPulse}
         />
         <MetricCard
           title='Notifications'

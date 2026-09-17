@@ -12,6 +12,7 @@ import TopScreensChart from '@/components/dashboard/top-screens-chart'
 import ScreenPerformanceTable from '@/components/dashboard/screen-performance-table'
 import UsersOverview from '@/components/dashboard/users-overview'
 import GoalsGraph from '@/components/dashboard/goals-graph'
+import ExercisesGraph from '@/components/dashboard/exercises-graph'
 import { MetricCardsRowSkeleton } from '@/components/dashboard/skeletons'
 import { TAB_ACTIVE_CLASS } from '@/lib/brand-colors'
 import { cn } from '@/lib/utils'
@@ -167,6 +168,8 @@ export default function HomePage() {
         <UsersOverview data={data} dateRange={currentDateRange} loading={isLoading} />
 
         <GoalsGraph dateRange={currentDateRange} />
+
+        <ExercisesGraph dateRange={currentDateRange} />
       </main>
     </>
   )

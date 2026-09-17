@@ -13,6 +13,7 @@ import UserAdminOverview from '@/components/users/user-admin-overview'
 import UserBotSection from '@/components/users/user-bot-section'
 import UserDailyActivity from '@/components/users/user-daily-activity'
 import UserEngagementSection from '@/components/users/user-engagement-section'
+import UserExerciseSection from '@/components/users/user-exercise-section'
 import UserFormDialog from '@/components/users/user-form-dialog'
 import UserGoalsSection from '@/components/users/user-goals-section'
 import UserQuestionnaireSection from '@/components/users/user-questionnaire-section'
@@ -318,6 +319,7 @@ export default function UserDetailPage({ id }) {
         <UserQuestionnaireSection answers={user.questionnaireAnswers} />
         <UserTradingSection userId={id} />
         <UserBotSection userId={id} />
+        <UserExerciseSection userId={id} />
         <UserSupportSection userId={id} />
         <UserActivitySummary userId={id} />
         <UserDailyActivity userId={id} />
