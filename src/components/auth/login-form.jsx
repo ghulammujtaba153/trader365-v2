@@ -14,7 +14,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 
 const fieldClassName =
   'h-10 border-zinc-200 bg-white px-3 text-zinc-950 placeholder:text-zinc-400 ' +
-  'dark:border-white/15 dark:bg-zinc-950 dark:text-zinc-50 dark:placeholder:text-zinc-500'
+  'dark:border-[rgb(148_163_184/18%)] dark:bg-[#0b1016] dark:text-white dark:placeholder:text-slate-500'
 
 export default function LoginForm() {
   const { login } = useAuth()
@@ -57,7 +57,7 @@ export default function LoginForm() {
       className={
         'mx-auto w-full max-w-[420px] border-0 bg-white/95 py-8 text-zinc-950 ' +
         'shadow-xl shadow-zinc-900/10 ring-1 ring-zinc-200/80 backdrop-blur-sm ' +
-        'dark:bg-zinc-900/95 dark:text-zinc-50 dark:shadow-black/40 dark:ring-white/10 ' +
+        'dark:bg-[#161b22] dark:text-white dark:shadow-black/30 dark:ring-[rgb(148_163_184/14%)] ' +
         '[--card-spacing:--spacing(7)]'
       }
     >
@@ -66,21 +66,21 @@ export default function LoginForm() {
           <img
             src='/logo.png'
             alt='Trader 365'
-            className='size-12 rounded-2xl object-contain shadow-sm ring-1 ring-zinc-200 dark:ring-white/15'
+            className='size-12 rounded-2xl object-contain shadow-sm ring-1 ring-zinc-200 dark:ring-[rgb(148_163_184/16%)]'
           />
           <div className='lg:hidden'>
-            <p className='text-sm font-semibold tracking-tight text-zinc-950 dark:text-zinc-50'>
+            <p className='text-sm font-semibold tracking-tight text-zinc-950 dark:text-white'>
               Trader 365
             </p>
-            <p className='text-[11px] text-zinc-500 dark:text-zinc-400'>Control center</p>
+            <p className='text-[11px] text-zinc-500 dark:text-slate-400'>Control center</p>
           </div>
         </div>
 
         <div className='space-y-1.5'>
-          <CardTitle className='text-2xl font-semibold tracking-tight text-zinc-950 dark:text-zinc-50'>
+          <CardTitle className='text-2xl font-semibold tracking-tight text-zinc-950 dark:text-white'>
             Welcome back
           </CardTitle>
-          <CardDescription className='text-[15px] leading-relaxed text-zinc-500 dark:text-zinc-400'>
+          <CardDescription className='text-[15px] leading-relaxed text-zinc-500 dark:text-slate-400'>
             Sign in with your admin or instructor account to open the dashboard.
           </CardDescription>
         </div>
@@ -89,7 +89,7 @@ export default function LoginForm() {
       <CardContent>
         <form onSubmit={handleSubmit} className='space-y-4'>
           <div className='space-y-2'>
-            <Label htmlFor='email' className='text-zinc-700 dark:text-zinc-300'>
+            <Label htmlFor='email' className='text-zinc-700 dark:text-slate-300'>
               Email
             </Label>
             <Input
@@ -104,7 +104,7 @@ export default function LoginForm() {
             />
           </div>
           <div className='space-y-2'>
-            <Label htmlFor='password' className='text-zinc-700 dark:text-zinc-300'>
+            <Label htmlFor='password' className='text-zinc-700 dark:text-slate-300'>
               Password
             </Label>
             <div className='relative'>
@@ -122,7 +122,7 @@ export default function LoginForm() {
                 type='button'
                 variant='ghost'
                 size='icon-sm'
-                className='absolute top-1/2 right-1.5 -translate-y-1/2 text-zinc-500 hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-white/10 dark:hover:text-zinc-100'
+                className='absolute top-1/2 right-1.5 -translate-y-1/2 text-zinc-500 hover:bg-zinc-100 hover:text-zinc-900 dark:text-slate-400 dark:hover:bg-[#1c232c] dark:hover:text-white'
                 onClick={() => setShowPassword(v => !v)}
                 aria-label={showPassword ? 'Hide password' : 'Show password'}
               >
@@ -147,7 +147,7 @@ export default function LoginForm() {
       </CardContent>
 
       <CardFooter className='border-0 bg-transparent pt-0'>
-        <p className='w-full text-center text-xs text-zinc-500 dark:text-zinc-400'>
+        <p className='w-full text-center text-xs text-zinc-500 dark:text-slate-400'>
           Access is limited to authorized admin accounts.
         </p>
       </CardFooter>

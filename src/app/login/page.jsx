@@ -13,8 +13,8 @@ export const metadata = {
 export default function LoginPage() {
   return (
     <RedirectIfAuthenticated>
-      <div className='relative min-h-screen overflow-hidden bg-zinc-950 lg:grid lg:grid-cols-[1.05fr_1fr]'>
-        <aside className='relative hidden min-h-screen flex-col justify-between overflow-hidden px-10 py-10 text-white lg:flex xl:px-14'>
+      <div className='relative min-h-screen overflow-hidden bg-[#0b1016] lg:grid lg:grid-cols-[1.05fr_1fr]'>
+        <aside className='relative hidden min-h-screen flex-col justify-between overflow-hidden bg-[#080c12] px-10 py-10 text-white lg:flex xl:px-14'>
           <LoginPatterns variant='dark' />
 
           <div className='relative z-10 flex items-center gap-3'>
@@ -30,23 +30,23 @@ export default function LoginPage() {
           </div>
 
           <div className='relative z-10 max-w-md space-y-4'>
-            <p className='text-xs font-semibold tracking-[0.22em] text-cyan-300/80 uppercase'>
+            <p className='text-xs font-semibold tracking-[0.22em] text-[#70c5e8]/80 uppercase'>
               Staff access
             </p>
             <h1 className='text-4xl font-semibold tracking-tight xl:text-5xl'>
               Trade with
-              <span className='block text-cyan-300'>clarity and control.</span>
+              <span className='block text-[#70c5e8]'>clarity and control.</span>
             </h1>
-            <p className='max-w-sm text-sm leading-relaxed text-white/60'>
+            <p className='max-w-sm text-sm leading-relaxed text-slate-400'>
               Sign in as an admin or instructor to manage users, content, subscriptions, and
               operations from one dashboard.
             </p>
           </div>
 
-          <p className='relative z-10 text-xs text-white/40'>Authorized personnel only</p>
+          <p className='relative z-10 text-xs text-slate-500'>Authorized personnel only</p>
         </aside>
 
-        <div className='relative flex min-h-screen items-center justify-center bg-zinc-50 p-4 dark:bg-zinc-950 sm:p-8 lg:bg-zinc-100 dark:lg:bg-zinc-900'>
+        <div className='relative flex min-h-screen items-center justify-center bg-zinc-50 p-4 dark:bg-[#0b1016] sm:p-8 lg:bg-zinc-100'>
           <Suspense
             fallback={
               <div className='relative z-10 w-full max-w-md space-y-3'>
