@@ -187,21 +187,29 @@ export default function AdminsPage() {
                           </TableCell>
                           {isSuperAdmin ? (
                             <TableCell className='text-right'>
-                              <div className='inline-flex gap-1'>
-                                <Button
-                                  variant='ghost'
-                                  size='icon-sm'
-                                  onClick={() => {
-                                    setEditAdmin(user)
-                                    setFormOpen(true)
-                                  }}
-                                >
-                                  <Pencil className='size-4' />
-                                </Button>
-                                <Button variant='ghost' size='icon-sm' onClick={() => setDeleteId(user._id)}>
-                                  <Trash2 className='size-4 text-destructive' />
-                                </Button>
-                              </div>
+                              {user.isSuperAdmin ? (
+                                <span className='text-sm text-muted-foreground'>—</span>
+                              ) : (
+                                <div className='inline-flex gap-1'>
+                                  <Button
+                                    variant='ghost'
+                                    size='icon-sm'
+                                    onClick={() => {
+                                      setEditAdmin(user)
+                                      setFormOpen(true)
+                                    }}
+                                  >
+                                    <Pencil className='size-4' />
+                                  </Button>
+                                  <Button
+                                    variant='ghost'
+                                    size='icon-sm'
+                                    onClick={() => setDeleteId(user._id)}
+                                  >
+                                    <Trash2 className='size-4 text-destructive' />
+                                  </Button>
+                                </div>
+                              )}
                             </TableCell>
                           ) : null}
                         </TableRow>

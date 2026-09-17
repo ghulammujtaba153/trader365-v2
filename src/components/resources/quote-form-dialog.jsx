@@ -74,23 +74,24 @@ export default function QuoteFormDialog({ open, onOpenChange, quote, onSaved }) 
   return (
     <>
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className='sm:max-w-4xl'>
+      <DialogContent className='sm:max-w-4xl min-h-[28rem]'>
         <DialogHeader>
           <DialogTitle>{isEdit ? 'Edit quote' : 'Add quote'}</DialogTitle>
           <DialogDescription>Keep it short — max {MAX_LENGTH} characters.</DialogDescription>
         </DialogHeader>
 
-        <form id='quote-form' onSubmit={handleSubmit} className='space-y-3'>
-          <div className='space-y-1.5'>
+        <form id='quote-form' onSubmit={handleSubmit} className='flex flex-1 flex-col space-y-4'>
+          <div className='flex flex-1 flex-col space-y-1.5'>
             <Label htmlFor='quote'>Quote</Label>
             <Textarea
               id='quote'
               value={value}
               onChange={e => setValue(e.target.value.slice(0, MAX_LENGTH))}
-              rows={4}
+              rows={10}
               maxLength={MAX_LENGTH}
               required
               aria-invalid={Boolean(error)}
+              className='min-h-[12rem] flex-1 resize-y'
             />
             <div className='flex items-center justify-between gap-2'>
               {error ? <p className='text-xs text-destructive'>{error}</p> : <span />}
