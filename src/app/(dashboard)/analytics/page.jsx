@@ -71,7 +71,10 @@ const TABS = [
 
 const PIE_COLORS = BRAND.chartPalette
 
-const pct = value => `${((Number(value) || 0) * 100).toFixed(1)}%`
+const pct = value => {
+  const ratio = Math.min(1, Math.max(0, Number(value) || 0))
+  return `${(ratio * 100).toFixed(1)}%`
+}
 const round1 = value => Number(Number(value || 0).toFixed(2))
 
 function EmptyRow({ colSpan, message }) {
@@ -316,7 +319,7 @@ export default function FirebaseAnalyticsPage() {
                 <MetricCard
                   title='Stickiness'
                   value={pct(overview.dauPerMau)}
-                  subtitle={`WAU/MAU ${pct(overview.wauPerMau)}`}
+                  subtitle={`DAU÷MAU · WAU/MAU ${pct(overview.wauPerMau)}`}
                   icon={Users}
                 />
               </div>
